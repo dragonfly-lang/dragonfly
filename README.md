@@ -2,11 +2,11 @@
 Yet another simple, easy to use, high-level scripting language.
 
 ```
-fun add_one(x int, y int) -> int {
-  return x + y
+func add_one(x int) int {
+  return x + 1
 }
 
-let number = 10
+var number = 10
 println(add_one(number))
 ```
 
