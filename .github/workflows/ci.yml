@@ -1,0 +1,67 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+      fail-fast: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build valgrind ${matrix.compiler} ${matrix.compiler}++
+
+      - name: Configure with CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_C_COMPILER=${{ matrix.compiler }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}++
+
+      - name: Build the project
+        run: |
+          cd build
+          cmake --build . --config ${{ matrix.build_type }}
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest --output-on-failure
+
+      - name: Run Valgrind tests
+        if: ${{ matrix.build_type == 'Debug' }}
+        run: |
+          cd build
+          ctest -R ValgrindTests --output-on-failure
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+          path: build
+
+      - name: Upload Valgrind logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: valgrind-logs-${{ matrix.compiler }}-${{ matrix.build_type }}
+          path: build/valgrind.log
