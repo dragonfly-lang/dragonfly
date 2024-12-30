@@ -1,0 +1,18 @@
+
+type User struct {
+    name string,
+    pass string,
+    favourite_colour Colour
+}
+
+let barry = User{
+    "Barry", "123", Colour.Blue,
+}
+
+println(barry.name)
+
+const jerry = User{
+    name: "Jerry",
+    pass: "321",
+    favourite_colour: .Blue
+}

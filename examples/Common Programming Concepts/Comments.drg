@@ -1,0 +1,7 @@
+// This is a single line comment 
+/*
+ This is a multi-line comment 
+*/
+
+// Comments can go in between shit:
+let /* look! */ x = /* neat! */ 10 

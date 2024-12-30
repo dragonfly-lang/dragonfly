@@ -1,0 +1,8 @@
+
+fn add<T>(a T, b T) -> T { return a + b }
+
+// We can ensure a trait is implemented for a given type 
+fn sub<T: Numeric>(a T, b T) -> T { return a - b }
+
+// We can have multiple generic types 
+fn mul<T: Numeric, K: Numeric, Y: Numeric>(a T, b K) -> Y { return a + b }

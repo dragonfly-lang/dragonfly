@@ -1,0 +1,27 @@
+
+/* Variable Declaration 
+
+Variables:
+`let <identifier <type>`  
+`let <identifier> <type> = <expr>`
+`let <identifier> = <expr>` <-- type inference 
+
+Constants:
+`const <identifier> <type>`
+`const <identifier> <type> = <expr>`
+`const <identifier> = <expr>` <-- type inference 
+*/
+
+const username string
+const age int = 100 + 100
+const id = 1034
+
+let inventory [string]
+let count int = 0
+let greeting = "!dlrow olleH"
+
+// Variable Assignment 
+username = "alice"  // This is allowed only once as the constant has not be assigned anything prior
+inventory = ["Sword", "Shield", "Potion"]
+count += 1
+greeting = greeting.reverse()

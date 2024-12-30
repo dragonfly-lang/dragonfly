@@ -1,28 +1,29 @@
 cmake_minimum_required(VERSION 3.15)
-project(MyLanguage C CXX)
+project(Dragon C CXX)
 
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
 
 set(SOURCES
-    src/lexer.c
-    src/token.c
-    src/parser.c
-    src/vm.c
-    src/codegen.c
-    src/semantics.c
+    src/lexer.cpp
+    src/token.cpp
+    src/parser.cpp
+    src/vm.cpp
+    src/codegen.cpp
+    src/semantics.cpp
 )
 
-add_executable(pebble src/main.c ${SOURCES})
+add_executable(dragon src/main.cpp ${SOURCES})
 
 include(FetchContent)
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/refs/heads/main.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP true
 )
 FetchContent_MakeAvailable(googletest)
 

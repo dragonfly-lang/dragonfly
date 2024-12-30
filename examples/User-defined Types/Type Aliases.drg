@@ -1,0 +1,9 @@
+
+// Here we can use `number` instead of `int` 
+type number int 
+
+// However, the underlying type is still exposed, traits will still match to both.
+// For example with the Eq trait: number(10) == int(10) // true 
+
+let x number = 10
+let xs string = x.(string)

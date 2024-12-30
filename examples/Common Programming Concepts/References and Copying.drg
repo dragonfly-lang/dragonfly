@@ -1,0 +1,21 @@
+// By default everything is passed around the program through copying.
+let x = 10
+let y = x   // The value of x is copied to y.
+
+// This is true even for more complex types.
+
+// However, we can reference any type of information, which allows it to be passed around the program 
+// without having to copy each time, which can get expensive.
+
+let a = 10
+let b = &a  
+
+println(b)  // 10
+
+// References are immutable by default, you can use &m for a mutable reference
+let c = &m a
+c += 1 // a and b are both now 11
+
+// References to constant cannot be modified.
+const pi = 3.14
+let pi_ref = &m pi // error

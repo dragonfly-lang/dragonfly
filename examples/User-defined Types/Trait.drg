@@ -1,0 +1,17 @@
+
+trait Animal {
+    fn new(name string) -> self
+    fn name(&self) -> string 
+}
+
+type Sheep struct { name string }
+
+impl Animal for Sheep {
+    fn new(name string) -> Sheep {
+        return Sheep { name }
+    }
+
+    fn name(&self) -> string {
+        return self.name 
+    }
+}

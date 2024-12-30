@@ -53,3 +53,4 @@ dkms.conf
 
 # Local files/paths
 build/
+.vscode/
