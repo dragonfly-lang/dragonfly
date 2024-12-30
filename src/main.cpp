@@ -1,9 +1,10 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <fstream>
 
 void help();
-void compile(std::string file, std::map<std::string, bool> options);
+const std::string& compile(const std::string& contents, const std::map<std::string, bool>& options);
 
 std::map <std::string, bool> options = {
     {"-l", false},
@@ -20,31 +21,60 @@ std::map <std::string, bool> options = {
 
 
 int main(int argc, char** argv) {
-    if (argc == 1 || (argc == 2 && (std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help"))) {
+    if (argc < 2 || (argc == 2 && (std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help"))) {
         help();
         return 0;
     }
 
-    std::string file = argv[argc - 1];
+    std::string filename;
+    std::string outputFilename;
+    bool outputFilenameSpecified = false;
 
-    FILE *f = fopen(file.c_str(), "r");
-    if (!f) {
-        std::cout << "Could not open file: " << file << std::endl;
-        return 1;
-    }
-
-    for (int i = 1; i < argc - 1; i++) {
+    for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if (options.find(arg) != options.end()) {
             options[arg] = true;
+            if (arg == "-o" || arg == "--output") {
+                if (i + 1 < argc) {
+                    outputFilename = argv[++i]; 
+                    outputFilenameSpecified = true;
+                } else {
+                    std::cerr << "Error: No output file specified after " << arg << "\n";
+                    return 1;
+                }
+            }
+        } else if (i == argc - 1) { 
+            filename = arg;
         } else {
-            std::cout << "Unknown option: " << arg << std::endl;
+            std::cerr << "Unknown option: " << arg << "\n";
             return 1;
         }
     }
 
-    compile(file, options);
-    fclose(f);
+    if (filename.empty()) {
+        std::cerr << "Error: No input file specified.\n";
+        return 1;
+    }
+
+    std::ifstream file(filename);
+    if (!file) {
+        std::cout << "Could not open file: " << filename << std::endl;
+        return 1;
+    }
+
+    std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    std::string output = compile(contents, options);
+
+    if (outputFilenameSpecified) {
+        std::cout << "Output has been written to: " << outputFilename << "\n";
+        std::ofstream outputFile(outputFilename);
+    } else {
+        outputFilename = filename.substr(0, filename.find_last_of('.'));
+        std::cout << "Output has been  written to: " << outputFilename << "\n";
+        std::ofstream outputFile(outputFilename);
+    }
 
     return 0;
 }
@@ -64,4 +94,8 @@ void help() {
         "  -o, --output   Specify the output file\n\n"
         "By default, the compiler will run all stages and produce an executable file of the same name as the argument.\n"
         );
+}
+
+const std::string& compile(const std::string& contents, const std::map<std::string, bool>& options) {
+    return "";
 }
