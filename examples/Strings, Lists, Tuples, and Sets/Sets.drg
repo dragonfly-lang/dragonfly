@@ -1,0 +1,17 @@
+
+
+let names {string}
+names = {"Jerry", "Barry", "Caesar"}
+
+// List methods 
+names.clear()
+names.pop()
+names.push()
+
+// Looping 
+for name in names {}
+for name, index in names {}
+
+// Indexing 
+names[0] // "Jerry"
+

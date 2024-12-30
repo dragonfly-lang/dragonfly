@@ -1,0 +1,16 @@
+
+let position2d (x int, y int)
+position2d = (10, 10)
+
+position2d[0]
+position2d[1]
+
+position2d.x
+position2d.y
+
+position2d.count()
+position2d.find()
+
+for p in position2d {}
+for p, index in position2d {}
+

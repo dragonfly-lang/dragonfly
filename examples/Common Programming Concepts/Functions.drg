@@ -1,0 +1,15 @@
+// Functions are pretty normal
+fn add(a int, b int) -> int { return a + b }
+add(10, 20)
+
+fn hello_world() {
+    println("Hello, World!")
+}
+
+// Lambda functions
+let add_one = (a int) -> int => a + 1
+add_one(10, add_one(10)) 
+
+// Lambda type
+let add_two (int) -> int
+add_two = (a) => a + 2

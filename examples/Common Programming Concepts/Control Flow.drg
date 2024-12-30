@@ -1,0 +1,22 @@
+// If statements 
+if false {
+    // Won't execute
+} else if true {
+    // Will execute 
+} else {
+    // Will only execute if all previous ifs are false
+}
+
+// Match statement 
+let x = 10 
+
+match x {
+    0: println("Zero")
+    1..5: println("NUMBER")
+    5: println("5")
+    >5: println("More than 5")
+    _: println("Negative!")
+}
+
+// Ternary operator
+let y = true ? 10 : 20 

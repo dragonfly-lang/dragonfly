@@ -1,0 +1,33 @@
+
+// Strings
+let msg string 
+msg = "Hello, World!"
+
+// String methods (prelude)
+msg.reverse()
+msg.replace("!", "?")
+msg.lowercase()
+msg.uppercase()
+msg.is_lowercase()
+msg.is_uppercase()
+msg.count()
+msg.trim()
+msg.find()
+msg.split()
+
+// String methods can also be applied to string literals 
+"Test".reverse().find("T") // return 3
+
+// Looping over a string 
+for c in "hello" {}
+for c, index in "hello" {}
+
+// Indexing a string 
+"hello"[2] // "l"
+
+// Concatenation
+"hello" + " world" 
+"hello" += " world"
+
+// Slicing [start:stop:step]
+"hello world"[5:11] // "world"

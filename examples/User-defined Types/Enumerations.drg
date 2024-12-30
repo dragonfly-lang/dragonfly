@@ -1,0 +1,15 @@
+
+type Colour enum {
+    Red,
+    Green,
+    Blue
+}
+
+let blue = Colour.Blue 
+
+type Direction enum {
+    Up = "^",
+    Right = "->",
+    Down = "v",
+    Left = "<-"
+}

@@ -1,0 +1,14 @@
+
+// The prelude includes Option and Result types
+
+func add<T>(a T, b T) -> Result<T> 
+
+// Pattern matching the result 
+let added = match add(10, 10) {
+    Result::success(s): s  
+    Result::error(s): {
+        println(s)
+        exit(1)
+    }
+}
+
