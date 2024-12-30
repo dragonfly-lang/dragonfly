@@ -1,12 +1,10 @@
 #include <gtest/gtest.h>
 
-extern "C" {
-    #include "pebble/lexer.h"
-}
 
-TEST(LexerTests, TokenizeSimpleString) {
-    const char* input = "let x = 42;";
-    TokenList* tokens = tokenize(input);
+#include "dragon/lexer.h"
+#include "dragon/token.h"
+
+
 
     ASSERT_NE(tokens, nullptr);
     ASSERT_EQ(tokens->count, 4);
