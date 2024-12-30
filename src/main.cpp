@@ -2,9 +2,10 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <optional>
 
 void help();
-const std::string& compile(const std::string& contents, const std::map<std::string, bool>& options);
+std::optional<std::string> compile(const std::string& contents, const std::map<std::string, bool>& options);
 
 std::map <std::string, bool> options = {
     {"-l", false},
@@ -65,7 +66,11 @@ int main(int argc, char** argv) {
     std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
 
-    std::string output = compile(contents, options);
+    auto output = compile(contents, options);
+    if (!output) {
+        std::cerr << "Compilation failed.\n";
+        return 1;
+    }
 
     if (outputFilenameSpecified) {
         std::cout << "Output has been written to: " << outputFilename << "\n";
@@ -96,6 +101,6 @@ void help() {
         );
 }
 
-const std::string& compile(const std::string& contents, const std::map<std::string, bool>& options) {
+std::optional<std::string> compile(const std::string& contents, const std::map<std::string, bool>& options) {
     return "";
 }
