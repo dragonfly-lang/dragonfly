@@ -10,4 +10,6 @@ This folder contains numerous examples for the Dragon programming language.
 - [Error Handling](./Error%20Handling/)
 - [Object Oriented Programming Features](./Object%20Oriented%20Programming%20Features/)
 - [Functional Programming Features](./Functional%20Programming%20Features/)
-- [Standard Library](./Standard%20Library/)
+- [Standard Library](./Standard%20Library/) [Coming soon!]
+
+There's also [demo.drg](./demo.drg) which is a showcase of all the features.
