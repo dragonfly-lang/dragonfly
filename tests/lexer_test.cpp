@@ -4,6 +4,38 @@
 #include "dragon/lexer.h"
 #include "dragon/token.h"
 
+// <identifier>
+TEST(LexerTests, Identifier) {
+    const std::array<std::string, 9> input = {
+        "x", 
+        "x_y123",
+        "reallyLongVariableNameWithNoNumbersOrUnderscores",
+        "U_ND_ER_SCO_RES",
+        "____starting___with__underscore",
+        "2thisShouldError_",        // Identifiers cannot start with a number 
+        "this should also error",   // Variables cannot contain spaces
+        "Error?",                   // Identifiers cannot contain question marks
+        "#*&$£!!!",                 // Identifiers cannot contain any of these symbols
+    };
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "x"),                                 
+        Token(TokenType::Identifier, "x_y123"),                            
+        Token(TokenType::Identifier, "reallyLongVariableNameWithNoNumbersOrUnderscores"), 
+        Token(TokenType::Identifier, "U_ND_ER_SCO_RES"),                  
+        Token(TokenType::Identifier, "____starting___with__underscore"),  
+        Token(TokenType::Unknown, "2thisShouldError_"),                      
+        Token(TokenType::Unknown, "this should also error"),               
+        Token(TokenType::Unknown, "Error?"),                            
+        Token(TokenType::Unknown, "#*&$£!!!")
+    };
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        Token t = lexer.lex_identifier(input[i]);
+        ASSERT_TRUE(validTokens[i] == t);
+    }
+}
+
 // let <identifier> <identifier> 
 // let <identifier> <identifier> = <expr>
 // let <identifier> = <expr>
