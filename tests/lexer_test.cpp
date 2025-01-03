@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-
+#include <memory>
 
 #include "dragon/lexer.h"
 #include "dragon/token.h"
@@ -37,6 +37,20 @@ TEST(LexerTests, Identifier) {
 }
 
 // let <identifier> <identifier> 
+TEST(LexerTests, VariableDeclarationWithoutExpr) {
+    const std::string input = "let variable int";
+    const std::vector<Token>  validTokens = {
+        Token(TokenType::LetKeyword, "let"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Identifier, "int")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
+
 // let <identifier> <identifier> = <expr>
 // let <identifier> = <expr>
 // const <identifier> <identifier> = <expr>
