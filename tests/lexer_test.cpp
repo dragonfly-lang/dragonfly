@@ -36,6 +36,21 @@ TEST(LexerTests, Identifier) {
     }
 }
 
+// <expr> 
+// Arithmetic
+
+// <expr> 
+// Boolean
+
+// <expr> 
+// Relational
+
+// <expr> 
+// bitwise
+
+// <expr>
+// Mixed
+
 // let <identifier> <identifier> 
 TEST(LexerTests, VariableDeclarationWithoutExpr) {
     const std::string input = "let variable int";
@@ -57,12 +72,11 @@ TEST(LexerTests, VariableDeclarationWithoutExpr) {
 // const <identifier> <identifier> 
 // const <identifier> = <expr>
 // <identifier> = <expr>
-// <identifier>(<expr>)
+// <params>
+// <identifier>(<params>)
 // while <expr> { <statement(s)> }
 // for <identifier> in <identifier> { <statement(s)> }
 // for <identifier> in <expr> { <statement(s)> }
 // if <expr> { <statement(s)> }
-// else { <statement(s)> }
 // else if <expr> { <statement(s)> }
-
-
+// else { <statement(s)> }
