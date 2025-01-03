@@ -1,4 +1,4 @@
-add_executable(run_tests lexer_test.cpp parser_test.cpp vm_test.cpp)
+add_executable(run_tests lexer_test.cpp parser_test.cpp semantics_test.cpp)
 
 target_link_libraries(run_tests gtest gtest_main pthread)
 target_include_directories(run_tests PRIVATE ../include)
@@ -7,7 +7,7 @@ target_sources(run_tests PRIVATE
     ../src/lexer.cpp
     ../src/token.cpp  
     ../src/parser.cpp
-    ../src/vm.cpp
+    ../src/semantics.cpp
 )
 
 include(GoogleTest)
