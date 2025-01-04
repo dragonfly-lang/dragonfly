@@ -35,6 +35,38 @@ TEST(LexerTests, Identifier) {
         ASSERT_TRUE(validTokens[i] == t);
     }
 }
+
+// <keyword>
+TEST(LexerTests, Keywords) {
+    const std::array<std::string, 9> input = {
+        "let",
+        "mut",
+        "if",
+        "else",
+        "for",
+        "in",
+        "true",
+        "false",
+        "while",
+    };
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
+        Token(TokenType::If, "if"),
+        Token(TokenType::Else, "else"),
+        Token(TokenType::For, "for"),
+        Token(TokenType::In, "in"),
+        Token(TokenType::True, "true"),
+        Token(TokenType::False, "false"),
+    };
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        Token t = lexer.lex_identifier(input[i]);
+        ASSERT_TRUE(validTokens[i] == t);
+    }    
+}
+
 // <integer>
 TEST(LexerTests, Integer) {
     const std::array<std::string, 4> input = {
