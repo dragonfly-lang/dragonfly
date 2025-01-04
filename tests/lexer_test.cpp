@@ -133,6 +133,25 @@ TEST(LexerTests, Operators) {
     }
 }
 
+// Test for punctuation
+TEST(LexerTests, Punctuation) {
+    const std::array<std::string, 3> input = {
+        "{", "}", ";"
+    };
+    const std::array<Token, 3> validTokens = {
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::RightBrace, "}"),
+        Token(TokenType::Semicolon, ";")
+    };
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        Token t = lexer.lex_punctuation(input[i]);
+        ASSERT_TRUE(validTokens[i] == t);
+    }
+}
+
 // <expr> 
 // Arithmetic
 
