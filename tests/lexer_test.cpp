@@ -112,6 +112,27 @@ TEST(LexerTests, Integer) {
     }
 }
 
+// Test for operators
+TEST(LexerTests, Operators) {
+    const std::array<std::string, 5> input = {
+        "+", "-", "*", "/", "="
+    };
+    const std::array<Token, 5> validTokens = {
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::Minus, "-"),
+        Token(TokenType::Asterisk, "*"),
+        Token(TokenType::Slash, "/"),
+        Token(TokenType::Equal, "=")
+    };
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        Token t = lexer.lex_operator(input[i]);
+        ASSERT_TRUE(validTokens[i] == t);
+    }
+}
+
 // <expr> 
 // Arithmetic
 
