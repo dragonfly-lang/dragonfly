@@ -152,6 +152,24 @@ TEST(LexerTests, Punctuation) {
     }
 }
 
+// Test for single-line comments
+TEST(LexerTests, SingleLineComments) {
+    const std::array<std::string, 1> input = {
+        "// This is a comment"
+    };
+    const std::array<Token, 1> validTokens = {
+        Token(TokenType::Comment, "// This is a comment")
+    };
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        Token t = lexer.lex_comment(input[i]);
+        ASSERT_TRUE(validTokens[i] == t);
+    }
+}
+
+
 // <expr> 
 // Arithmetic
 
