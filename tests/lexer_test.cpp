@@ -35,6 +35,28 @@ TEST(LexerTests, Identifier) {
         ASSERT_TRUE(validTokens[i] == t);
     }
 }
+// <integer>
+TEST(LexerTests, Integer) {
+    const std::array<std::string, 4> input = {
+        "1",
+        "123",
+        "0",
+        "1_000_000",    // Underscores are allowed, but are ignored
+    };
+    const std::array<Token, 4> validTokens = {
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::IntegerLiteral, "123"),
+        Token(TokenType::IntegerLiteral, "0"),
+        Token(TokenType::IntegerLiteral, "1_000_000")
+    };
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        Token t = lexer.lex_number(input[i]);
+        ASSERT_TRUE(validTokens[i] == t);
+    }
+}
 
 // <expr> 
 // Arithmetic
