@@ -169,6 +169,22 @@ TEST(LexerTests, SingleLineComments) {
     }
 }
 
+// Test for multi-line comments
+TEST(LexerTests, MultiLineComments) {
+    const std::array<std::string, 1> input = {
+        "/* This is a multi-line comment */"
+    };
+    const std::array<Token, 1> validTokens = {
+        Token(TokenType::Comment, "/* This is a multi-line comment */")
+    };
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        Token t = lexer.lex_comment(input[i]);
+        ASSERT_TRUE(validTokens[i] == t);
+    }
+}
 
 // <expr> 
 // Arithmetic
