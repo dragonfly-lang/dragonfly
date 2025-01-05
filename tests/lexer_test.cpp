@@ -305,6 +305,41 @@ TEST(LexerTests, Relational) {
 
 // <expr> 
 // bitwise
+TEST(LexerTests, Bitwise) {
+    const std::array<std::string, 4> input = {
+        "1 & 2",
+        "1 | 2",
+        "1 ^ 2",
+        "~1"
+    };
+    const std::array<std::vector<Token>, 4> validTokens = {
+        {
+            Token(TokenType::IntegerLiteral, "1"),
+            Token(TokenType::Ampersand, "&"),
+            Token(TokenType::IntegerLiteral, "2")
+        },
+        {
+            Token(TokenType::IntegerLiteral, "1"),
+            Token(TokenType::Pipe, "|"),
+            Token(TokenType::IntegerLiteral, "2")
+        },
+        {
+            Token(TokenType::IntegerLiteral, "1"),
+            Token(TokenType::Caret, "^"),
+            Token(TokenType::IntegerLiteral, "2")
+        },
+        {
+            Token(TokenType::Tilde, "~"),
+            Token(TokenType::IntegerLiteral, "1")
+        }
+    };
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+        ASSERT_TRUE(validTokens[i] == tokens);
+    }
+}
 
 // <expr>
 // Mixed
