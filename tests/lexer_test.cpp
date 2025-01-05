@@ -493,8 +493,22 @@ TEST(LexerTests, MutableVariableDeclarationWithoutType) {
 }
 
 // <identifier> = <expr>
-// <params>
-// <identifier>(<params>)
+TEST(LexerTests, Assignment) {
+    const std::string input = "variable = 1 + 2";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Equal, "="),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
+
 // while <expr> { <statement(s)> }
 // for <identifier> in <identifier> { <statement(s)> }
 // for <identifier> in <expr> { <statement(s)> }
