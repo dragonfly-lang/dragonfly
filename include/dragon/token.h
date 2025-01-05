@@ -2,6 +2,33 @@
 
 #include <string>
 #include <format>
+class Token {
+public: 
+    TokenType type;
+    std::string value;
+    size_t line;
+    size_t column;
+
+    Token(TokenType type, std::string value, size_t line, size_t column) {
+        this->type = type;
+        this->value = value;
+        this->line = line;
+        this->column = column;
+    }
+
+    Token(TokenType type, std::string value) {
+        this->type = type;
+        this->value = value;
+        this->line = 0;
+        this->column = 0;
+    }
+
+    Token(TokenType type) {
+        this->type = type;
+        this->value = "";
+        this->line = 0;
+        this->column = 0;
+    }
     // Keywords
     TOKEN_LET_KW,                   // "let"
     TOKEN_MUT_KW,                   // "mut"
