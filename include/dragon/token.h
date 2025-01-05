@@ -29,6 +29,14 @@ public:
         this->line = 0;
         this->column = 0;
     }
+
+    inline bool operator==(const Token& other) const {
+        return this->type == other.type && this->value == other.value;
+    }
+
+    inline bool operator!=(const Token& other) const {
+        return this->type != other.type || this->value != other.value;
+    }
     // Keywords
     TOKEN_LET_KW,                   // "let"
     TOKEN_MUT_KW,                   // "mut"
