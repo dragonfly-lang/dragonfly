@@ -245,17 +245,22 @@ Token Lexer::lex_symbol() {
             return Token(TokenType::Unknown, value, line, column);
     }
 }
+
+Token Lexer::lex_single_line_comment() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    while (true) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value() || opt_c.value() == '\n') {
             break;
-        case '.':
-            printf("Next char: %c\n", lexer->source[lexer->position + 1]);
-            if (lexer->source[lexer->position + 1] == '.') {
-                type = TOKEN_RANGE;
-                value = strndup(lexer->source + lexer->position, 2);
-                lexer->position++;
-            } else {
-                type = TOKEN_INVALID;
-                value = strndup(lexer->source + lexer->position, 1);
-            }
+        }
+        value += this->advance().value();
+    }
+
+    return Token(TokenType::Comment, value, line, column);
+}
             break;
         default:
             type = TOKEN_INVALID;
