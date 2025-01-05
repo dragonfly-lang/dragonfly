@@ -31,8 +31,15 @@ TEST(LexerTests, Identifier) {
     Lexer lexer;
 
     for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_identifier(input[i]);
-        ASSERT_TRUE(validTokens[i] == t);
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
     }
 }
 
@@ -63,8 +70,15 @@ TEST(LexerTests, Keywords) {
     Lexer lexer;
 
     for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_identifier(input[i]);
-        ASSERT_TRUE(validTokens[i] == t);
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
     }    
 }
 
