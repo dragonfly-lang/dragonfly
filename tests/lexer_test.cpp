@@ -575,6 +575,30 @@ TEST(LexerTests, WhileLoop) {
 }
 
 // for <identifier> in <identifier> { <statement(s)> }
+TEST(LexerTests, ForLoop) {
+    const std::string input = "for i in 0..10 { i = i + 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::For, "for"),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::In, "in"),
+        Token(TokenType::IntegerLiteral, "0"),
+        Token(TokenType::Range, ".."),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::Equal, "="),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
+
 // for <identifier> in <expr> { <statement(s)> }
 // if <expr> { <statement(s)> }
 // else if <expr> { <statement(s)> }
