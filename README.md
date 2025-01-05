@@ -1,4 +1,4 @@
-# Dragon
+# Dragonfly Compiler
 A high-level multi-paradigm programming language.
 
 ```

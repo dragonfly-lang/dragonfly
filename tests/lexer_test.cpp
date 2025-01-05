@@ -1,521 +1,854 @@
 #include <gtest/gtest.h>
-
-
+#include <memory>
+#include <sstream>
+#include <vector>
+#include <string>
 #include "dragon/lexer.h"
 #include "dragon/token.h"
 
+// <identifier>
+TEST(LexerTests, Identifier) {
+    const std::vector<std::string> input = {
+        "x",
+        "x_y123",
+        "reallyLongVariableNameWithNoNumbersOrUnderscores",
+        "U_ND_ER_SCO_RES",
+        "____starting___with__underscore",
+    };
+    std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Identifier, "x_y123"),
+        Token(TokenType::Identifier, "reallyLongVariableNameWithNoNumbersOrUnderscores"),
+        Token(TokenType::Identifier, "U_ND_ER_SCO_RES"),
+        Token(TokenType::Identifier, "____starting___with__underscore"),
+    };
+    Lexer lexer;
 
-TEST(LexerTests, TokeniseVariableDeclarations) {
-    const char* input = R"(
-        let variable324534 int = 42
-        let mut t_t_3434_t_golden bool = true
-        let bacon_wrapped_4_shrimp float = 3.14
-    )";
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
 
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 15);
-
-    int i = 0;
-
-    // let x int = 42
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // x
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);       // int
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // 42
-
-    // let mut y bool = true
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_MUT_KW);       // mut
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // y
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BOOL_KW);      // bool
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_TRUE_KW);      // true
-
-    // let z float = 3.14
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // z
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FLOAT);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FLOAT);        // 3.14
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseVariableAssignment) {
-    const char* input = "name = \"Alice and the frog\"";
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 5);
-
-    int i = 0;
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "x"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);      // "="
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // "42"
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseRelationalOperators) {
-    const char* input = "20 > x > 10 < 1000 <= 34_540 >= 0";
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 6);
-
-    int i = 0;
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // "20"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GRT);         // ">"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "x"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GRT);         // ">"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // "10"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LSS);         // "<"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // "1000"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GTE);         // ">="
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // "34540"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LTE);         // "<="
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // "0"
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseBooleanOperators) {
-    const char* input = "false || true && !!x";
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 7);
-
-    int i = 0;
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FALSE_KW);    // "false"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_OR);          // "||"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_TRUE_KW);     // "true"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_AND);         // "&&"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_NOT);         // "!"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_NOT);         // "!"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "x"
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseElseIf) {
-    const char* input = R"(
-        if x > 10 {
-            return
-        } else if x < 5 {
-            break
-        }
-    )";
-
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 16);
-
-    int i = 0;
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IF_KW);        // "if"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // "x"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GRT);          // ">"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // "10"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RETURN_KW);    // "return"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_ELSE_KW);      // "else"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IF_KW);        // "if"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // "x"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LTE);          // "<"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // "5"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BREAK_KW);     // "break"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseConditionalForLoop) {
-    const char* input = R"(
-        if 20 > x > 10 {
-            return
-        } else {
-            for i in 1..10 {
-                if i == 5 && !!y {
-                    break
-                }
-                continue
-            }
-        }
-    )";
-
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 36);
-
-    int i = 0;
-
-    // if 20 > x > 10
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IF_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // 20
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GRT);          // >
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // x
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GRT);          // >
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // 10
-
-    // { return }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RETURN_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    // else { for i in 1..10 { ... } }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_ELSE_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FOR_KW);       // for
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // i
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IN_KW);        // in
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // 1
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RANGE);        // ..
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // 10
-
-    // { if i == 5 && !!y { break } continue }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IF_KW);        // if
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // i
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALITY);     // ==
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);      // 5
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_AND);          // &&
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_NOT);          // !
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_NOT);          // !
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // y
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BREAK_KW);     // break
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_CONTINUE_KW);  // continue
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseWhileLoop) {
-    const char* input = R"(
-        while y {
-            y = false || false
-        }
-    )";
-
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 10);
-
-    int i = 0;
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_WHILE_KW);     // while
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // y
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // y
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);       // =
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FALSE_KW);     // false
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_OR);           // ||
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FALSE_KW);     // false
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseFunctionDefinition) {
-    const char* input = R"(
-        func add(a int, b int) -> int {
-            return a + b
-        }
-    )";
-
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 17);
-
-    int i = 0;
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FUNC_KW);      // func
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // add
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PAREN_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // a
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);       // int
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_COMMA);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // b
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);       // int
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PAREN_CLOSE);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RIGHT_ARROW);  // ->
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);       // int
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RETURN_KW);    // return
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // a
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PLUS);         // +
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);   // b
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseLambdaFunction) {
-    const char* input = "let add = (x, y) => x + y";
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 10);
-
-    int i = 0;
-
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);      // "let"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "add"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);      // "="
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PAREN_OPEN);  // "("
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "x"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_COMMA);       // ","
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "y"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PAREN_CLOSE); // ")"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_DOUBLE_RIGHT_ARROW); // "=>"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "x"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PLUS);        // "+"
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // "y"
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseEmptyInput) {
-    const char* input = "";
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 0);
-
-    free_tokens(tokens);
-}
-
-TEST(LexerTests, TokeniseInvalidInput) {
-    const char* input = "$/?#¬`";
-    TokenList* tokens = tokenise(input);
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
     
-
-    ASSERT_NE(tokens, nullptr);
-    ASSERT_EQ(tokens->count, 1);
-
-    EXPECT_EQ(tokens->tokens[0].type, TOKEN_INVALID); 
-
-    free_tokens(tokens);
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
+    }
 }
 
-// This tests everything supported by the lexer, including keywords, operators, and literals.
-// The input is a large snippet of Dragon code that uses all the features of the language.
-// This is useful to quickly check if the lexer is working as expected, more specific cases are useful for debugging.
-TEST(LexerTests, TokeniseEverything) {
-    const char* input = R"(
-        let x int = 42
-        let mut y bool = true
-        let z float = 3.14
+// <keyword>
+TEST(LexerTests, Keywords) {
+    const std::vector<std::string> input = {
+        "let",
+        "mut",
+        "if",
+        "else",
+        "for",
+        "in",
+        "true",
+        "false",
+        "while",
+    };
+    std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
+        Token(TokenType::If, "if"),
+        Token(TokenType::Else, "else"),
+        Token(TokenType::For, "for"),
+        Token(TokenType::In, "in"),
+        Token(TokenType::True, "true"),
+        Token(TokenType::False, "false"),
+        Token(TokenType::While, "while"),
+    };
+    Lexer lexer;
 
-        if 20 > x > 10 {
-            return
-        } else {
-            for i in 1..10 {
-                if i == 5 && !!y {
-                    break
-                }
-                continue
-            }
-        }
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
 
-        while y {
-            y = false || false
-        }
-
-        func add(a int, b int) -> int {
-            return a + b
-        }
-
-        struct Point {
-            x float,
-            y float
-        }
-
-        let mut p Point = Point{1, 2}
-        p.x = p.y * 10 / 100 - 5
-
-        enum Color {
-            Red,
-            Green,
-            Blue,
-        }
-
-        Color.Green
-
-        import math
-        return;
-    )";
-
-    TokenList* tokens = tokenise(input);
-
-    ASSERT_NE(tokens, nullptr);
-
-    ASSERT_EQ(tokens->count, 131); 
-
-    int i = 0;
-
-    // let x int = 42
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);
-
-    // let mut y bool = true
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_MUT_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BOOL_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_TRUE_KW);
-
-    // let z float = 3.14
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FLOAT);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FLOAT);
-
-    // if 20 > x > 10
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IF_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GRT);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_GRT);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);
-
-    // { return }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RETURN_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    // else { ... }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_ELSE_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-
-    // for i in 1..10
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FOR_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IN_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RANGE);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);
-
-    // Continue for other statements similarly...
-
-    // while y { y = false || false }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_WHILE_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // y
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // y
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FALSE_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_OR);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FALSE_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    // func add(a int, b int) -> int { return a + b }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FUNC_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // add
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PAREN_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // a
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);      // int
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_COMMA);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // b
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);      // int
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PAREN_CLOSE);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RIGHT_ARROW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INT_KW);      // int
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RETURN_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // a
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_PLUS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // b
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    // struct Point { x float, y float }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_STRUCT_KW);   // struct
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Point
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // x
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FLOAT);       // float
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_COMMA);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // y
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_FLOAT);       // float
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    // let mut p Point = Point{1, 2}
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_LET_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_MUT_KW);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // p
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Point
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Point
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // 1
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_COMMA);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // 2
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    // p.x = p.y * 10 / 100 - 5
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // p
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_DOT);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // x
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_EQUALS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // p
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_DOT);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // y
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_ASTERISK);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // 10
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_SLASH);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // 100
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_MINUS);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_INTEGER);     // 5
-
-    // enum Color { Red, Green, Blue }
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_ENUM_KW);     // enum
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Color
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_OPEN);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Red
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_COMMA);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Green
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_COMMA);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Blue
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_BRACE_CLOSE);
-
-    // Color.Green
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Color
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_DOT);
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // Green
-
-    // import math
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IMPORT_KW);   // import
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_IDENTIFIER);  // math
-
-    // return;
-    EXPECT_EQ(tokens->tokens[i++].type, TOKEN_RETURN_KW);   // return
-
-    free_tokens(tokens);
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
+    }
 }
 
+// <string>
+TEST(LexerTests, StringLiterals) {
+    const std::vector<std::string> input = {
+        "\"Enter username: \"",
+        "\"This is a string with a escape characters \\\" \\n \\t \"",
+        "\"Abcdefghijklmnopqrstuvwxyz @#][{};;@'><,.//?)(*&^%$£1234567890+_-=`¬\\|\""
 
+    };
+    std::vector<Token> validTokens = {
+        Token(TokenType::StringLiteral, "Enter username: "),
+        Token(TokenType::StringLiteral, "This is a string with a escape characters \" \n \t "),
+        Token(TokenType::StringLiteral, "Abcdefghijklmnopqrstuvwxyz @#][{};;@'><,.//?)(*&^%$£1234567890+_-=`¬\\|")};
 
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
+    }
+}
+
+// <integer>
+TEST(LexerTests, Integer) {
+    const std::vector<std::string> input = {
+        "1",
+        "123",
+        "0",
+        "1_000_000", // Underscores are allowed, but are ignored
+    };
+    std::vector<Token> validTokens = {
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::IntegerLiteral, "123"),
+        Token(TokenType::IntegerLiteral, "0"),
+        Token(TokenType::IntegerLiteral, "1000000")};
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
+    }
+}
+
+// Test for all symbols
+TEST(LexerTests, Symbols) {
+    const std::vector<std::string> input = {
+        "+",
+        "-",
+        "*",
+        "/",
+        "=",
+        "==",
+        "!=",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "&&",
+        "||",
+        "!",
+        "&",
+        "|",
+        "^",
+        "~"};
+    std::vector<Token> validTokens = {
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::Minus, "-"),
+        Token(TokenType::Star, "*"),
+        Token(TokenType::Slash, "/"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Equals, "=="),
+        Token(TokenType::NotEquals, "!="),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::GreaterThan, ">"),
+        Token(TokenType::LessThanOrEqualTo, "<="),
+        Token(TokenType::GreaterThanOrEqualTo, ">="),
+        Token(TokenType::And, "&&"),
+        Token(TokenType::Or, "||"),
+        Token(TokenType::Not, "!"),
+        Token(TokenType::Ampersand, "&"),
+        Token(TokenType::Pipe, "|"),
+        Token(TokenType::Caret, "^"),
+        Token(TokenType::Tilde, "~")};
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
+    }
+}
+
+// <comment>
+// Test for single-line comments
+TEST(LexerTests, SingleLineComments) {
+    const std::vector<std::string> input = {
+        "// This is a comment"};
+    std::vector<Token> validTokens = {
+        Token(TokenType::Comment, "// This is a comment")};
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
+    }
+}
+
+// <comment>
+// Test for multi-line comments
+TEST(LexerTests, MultiLineComments) {
+    const std::vector<std::string> input = {
+        "/* This is a multi-line comment */"};
+    std::vector<Token> validTokens = {
+        Token(TokenType::Comment, "/* This is a multi-line comment */")};
+
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(tokens.size(), 1)
+            << "Failed on input: " << input[i]
+            << " ( recieved a size of " << tokens.size() << ", expected a size of 1)";
+    
+        ASSERT_EQ(validTokens[i], tokens[0])
+            << "Failed on input: " << input[i]
+            << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << validTokens[i].to_string() << ")";
+    }
+}
+
+// <expr>
+// Arithmetic
+TEST(LexerTests, ArithmeticExpression) {
+    const std::vector<std::string> input = {
+        "1 + 2",
+        "1 - 2",
+        "1 * 2",
+        "1 / 2"};
+    const std::vector<std::vector<Token>> validTokens = {
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::Plus, "+"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::Minus, "-"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::Star, "*"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::Slash, "/"),
+         Token(TokenType::IntegerLiteral, "2")}};
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++)
+    {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(validTokens[i].size(), tokens.size())
+            << "Failed on input: " << (input[i])
+            << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens[i].size() << ")";
+
+        for (size_t j = 0; j < tokens.size(); j++)
+        {
+            ASSERT_EQ(validTokens[i][j], tokens[j])
+                << "Failed on input: " << (input[i])
+                << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens[i]) << ")";
+        }
+    }
+}
+
+// <expr>
+// Boolean
+TEST(LexerTests, BooleanExpression) {
+    const std::vector<std::string> input = {
+        "true && false",
+        "true || false",
+        "!true",
+        "true == false",
+        "true != false"};
+    const std::vector<std::vector<Token>> validTokens = {
+        {Token(TokenType::True, "true"),
+         Token(TokenType::And, "&&"),
+         Token(TokenType::False, "false")},
+        {Token(TokenType::True, "true"),
+         Token(TokenType::Or, "||"),
+         Token(TokenType::False, "false")},
+        {Token(TokenType::Not, "!"),
+         Token(TokenType::True, "true")},
+        {Token(TokenType::True, "true"),
+         Token(TokenType::Equals, "=="),
+         Token(TokenType::False, "false")},
+        {Token(TokenType::True, "true"),
+         Token(TokenType::NotEquals, "!="),
+         Token(TokenType::False, "false")}};
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++)
+    {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(validTokens[i].size(), tokens.size())
+            << "Failed on input: " << (input[i])
+            << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens[i].size() << ")";
+
+        for (size_t j = 0; j < tokens.size(); j++)
+        {
+            ASSERT_EQ(validTokens[i][j], tokens[j])
+                << "Failed on input: " << input[i]
+                << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens[i]) << ")";
+        }
+    }
+}
+
+// <expr>
+// Relational
+TEST(LexerTests, RelationalExpression) {
+    const std::vector<std::string> input = {
+        "1 < 2",
+        "1 > 2",
+        "1 <= 2",
+        "1 >= 2"};
+    const std::vector<std::vector<Token>> validTokens = {
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::LessThan, "<"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::GreaterThan, ">"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::LessThanOrEqualTo, "<="),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::GreaterThanOrEqualTo, ">="),
+         Token(TokenType::IntegerLiteral, "2")}};
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++)
+    {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(validTokens[i].size(), tokens.size())
+            << "Failed on input: " << (input[i])
+            << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens[i].size() << ")";
+
+        for (size_t j = 0; j < tokens.size(); j++)
+        {
+            ASSERT_EQ(validTokens[i][j], tokens[j])
+                << "Failed on input: " << input[i]
+                << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens[i]) << ")";
+        }
+    }
+}
+
+// <expr>
+// bitwise
+TEST(LexerTests, BitwiseExpression) {
+    const std::vector<std::string> input = {
+        "1 & 2",
+        "1 | 2",
+        "1 ^ 2",
+        "~1"};
+    const std::vector<std::vector<Token>> validTokens = {
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::Ampersand, "&"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::Pipe, "|"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::IntegerLiteral, "1"),
+         Token(TokenType::Caret, "^"),
+         Token(TokenType::IntegerLiteral, "2")},
+        {Token(TokenType::Tilde, "~"),
+         Token(TokenType::IntegerLiteral, "1")}};
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++)
+    {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+
+        ASSERT_EQ(validTokens[i].size(), tokens.size())
+            << "Failed on input: " << (input[i])
+            << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens[i].size() << ")";
+
+        for (size_t j = 0; j < tokens.size(); j++)
+        {
+            ASSERT_EQ(validTokens[i][j], tokens[j])
+                << "Failed on input: " << input[i]
+                << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens[i]) << ")";
+        }
+    }
+}
+
+// <expr>
+// Mixed
+TEST(LexerTests, MixedExpression) {
+    const std::string input = "1 + 2 * 3 / 4 - 5 == !true && 7 < 8 || 9 > 10 && 11 <= 12 | 13 & 14 ^ 15";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2"),
+        Token(TokenType::Star, "*"),
+        Token(TokenType::IntegerLiteral, "3"),
+        Token(TokenType::Slash, "/"),
+        Token(TokenType::IntegerLiteral, "4"),
+        Token(TokenType::Minus, "-"),
+        Token(TokenType::IntegerLiteral, "5"),
+        Token(TokenType::Equals, "=="),
+        Token(TokenType::Not, "!"),
+        Token(TokenType::True, "true"),
+        Token(TokenType::And, "&&"),
+        Token(TokenType::IntegerLiteral, "7"),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::IntegerLiteral, "8"),
+        Token(TokenType::Or, "||"),
+        Token(TokenType::IntegerLiteral, "9"),
+        Token(TokenType::GreaterThan, ">"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::And, "&&"),
+        Token(TokenType::IntegerLiteral, "11"),
+        Token(TokenType::LessThanOrEqualTo, "<="),
+        Token(TokenType::IntegerLiteral, "12"),
+        Token(TokenType::Pipe, "|"),
+        Token(TokenType::IntegerLiteral, "13"),
+        Token(TokenType::Ampersand, "&"),
+        Token(TokenType::IntegerLiteral, "14"),
+        Token(TokenType::Caret, "^"),
+        Token(TokenType::IntegerLiteral, "15")};
+
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// let <identifier> <identifier>
+TEST(LexerTests, VariableDeclarationWithoutExpr) {
+    const std::string input = "let variable int";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Identifier, "int")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// let <identifier> <identifier> = <expr>
+TEST(LexerTests, VariableDeclarationWithExpr) {
+    const std::string input = "let variable int = 1 + 2";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Identifier, "int"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// let <identifier> = <expr>
+TEST(LexerTests, VariableDeclarationWithoutType) {
+    const std::string input = "let variable = 1 + 2";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// let mut <identifier> <identifier> = <expr>
+TEST(LexerTests, MutableVariableDeclarationWithExpr) {
+    const std::string input = "let mut variable int = 1 + 2";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Identifier, "int"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// let mut <identifier> <identifier>
+TEST(LexerTests, MutableVariableDeclarationWithoutExpr) {
+    const std::string input = "let mut variable int";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Identifier, "int")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// let mut <identifier> = <expr>
+TEST(LexerTests, MutableVariableDeclarationWithoutType) {
+    const std::string input = "let mut variable = 1 + 2";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// <identifier> = <expr>
+TEST(LexerTests, Assignment) {
+    const std::string input = "variable = 1 + 2";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// <args>
+// Example: x, y, 1 + 3
+TEST(LexerTests, Arguments) {
+    const std::string input = "x, y, 1 + 3";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::Identifier, "y"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "3")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// <identifier>(<args>)
+TEST(LexerTests, FunctionCall) {
+    const std::string input = "function(x, y, 1 + 3)";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "function"),
+        Token(TokenType::LeftParen, "("),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::Identifier, "y"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "3"),
+        Token(TokenType::RightParen, ")")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// while <expr> { <statement(s)> }
+TEST(LexerTests, WhileLoop) {
+    const std::string input = "while x < 10 { x = x + 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::While, "while"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// for <identifier> in <identifier> { <statement(s)> }
+TEST(LexerTests, ForLoop) {
+    const std::string input = "for i in 0..10 { i = i + 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::For, "for"),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::In, "in"),
+        Token(TokenType::IntegerLiteral, "0"),
+        Token(TokenType::Range, ".."),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// for <identifier> in <expr> { <statement(s)> }
+TEST(LexerTests, ForLoopWithExpr) {
+    const std::string input = "for i in 0..(10 + 1) { i = i + 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::For, "for"),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::In, "in"),
+        Token(TokenType::IntegerLiteral, "0"),
+        Token(TokenType::Range, ".."),
+        Token(TokenType::LeftParen, "("),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightParen, ")"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "i"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// if <expr> { <statement(s)> }
+TEST(LexerTests, IfStatement) {
+    const std::string input = "if x < 10 { x = x + 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::If, "if"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// else if <expr> { <statement(s)> }
+TEST(LexerTests, ElseIfStatement) {
+    const std::string input = "if x < 10 { x = x + 1 } else if x > 10 { x = x - 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::If, "if"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}"),
+        Token(TokenType::Else, "else"),
+        Token(TokenType::If, "if"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::GreaterThan, ">"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Minus, "-"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}
+
+// else { <statement(s)> }
+TEST(LexerTests, ElseStatement) {
+    const std::string input = "if x < 10 { x = x + 1 } else { x = x - 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::If, "if"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}"),
+        Token(TokenType::Else, "else"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Minus, "-"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")};
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
+}

@@ -1,24 +1,38 @@
-#ifndef LEXER_H
-#define LEXER_H
+#pragma once 
 
+#include <string>
+#include <vector>
+#include <sstream>
+#include <optional>
 #include "token.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
 
-typedef struct {
-    char* source;
-    size_t position;
-} Lexer;
+class Lexer {
+public:
+    Lexer() = default;
+    Lexer(std::string input);
 
-Lexer* create_lexer(const char* source);
-Token lex_number(Lexer* lexer);
-Token lex_identifier(Lexer* lexer);
-Token lex_symbol(Lexer* lexer);
-Token lex_string(Lexer* lexer);
-Token is_keyword(Token token);
-TokenList* tokenise(const char* source);
-void free_lexer(Lexer* lexer);
+    std::vector<Token> lex(std::string input);  
+    std::vector<Token> lex();
 
-#endif // LEXER_H
+    void reset();
+
+    Token lex_identifier();
+    Token lex_number();
+    Token lex_string();
+    Token lex_symbol();
+    Token lex_single_line_comment();
+    Token lex_multi_line_comment();
+
+    TokenType get_keyword(std::string input);
+
+private:
+    std::vector<Token> tokens;
+    std::string input;
+    size_t index = 0;
+    size_t line = 1;
+    size_t column = 1;
+
+    std::optional<char> peek() const;
+    std::optional<char> peek_next() const;
+    std::optional<char> advance();
+};

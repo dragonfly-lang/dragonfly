@@ -1,130 +1,164 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#pragma once
 
-#include <stddef.h>
+#include <string>
 
-typedef enum {
+enum class TokenType {
     // Keywords
-    TOKEN_LET_KW,                   // "let"
-    TOKEN_MUT_KW,                   // "mut"
-    TOKEN_INT_KW,                   // "int"
-    TOKEN_IF_KW,                    // "if"
-    TOKEN_ELSE_KW,                  // "else"
-    TOKEN_FOR_KW,                   // "for"
-    TOKEN_IN_KW,                    // "in"
-    TOKEN_FUNC_KW,                  // "func"
-    TOKEN_RETURN_KW,                // "return"
-    TOKEN_WHILE_KW,                 // "while"
-    TOKEN_TRUE_KW,                  // "true"
-    TOKEN_FALSE_KW,                 // "false"
-    TOKEN_BOOL_KW,                  // "bool"
-    TOKEN_BREAK_KW,                 // "break"
-    TOKEN_CONTINUE_KW,              // "continue"
-    TOKEN_STRUCT_KW,                // "struct"
-    TOKEN_ENUM_KW,                  // "enum"
-    TOKEN_TYPE_KW,                  // "type"
-    TOKEN_MATCH_KW,                 // "match"
-    TOKEN_IMPORT_KW,                // "import"
-    TOKEN_AS_KW,                    // "as"
+    Let,
+    Mut,
+    If,
+    Else,
+    While,
+    For,
+    In,
+    True,
+    False,
 
     // Literals
-    TOKEN_INTEGER,                  // 123
-    TOKEN_FLOAT,                    // 123.45
-    TOKEN_IDENTIFIER,               // variable_name
-    TOKEN_STRING,                   // "string"
-    TOKEN_CHAR,                     // 'c'
+    IntegerLiteral,
+    StringLiteral,
+    Identifier,
 
     // Symbols
-    TOKEN_EQUALS,                   // =
-    TOKEN_PLUS,                     // +
-    TOKEN_MINUS,                    // -
-    TOKEN_ASTERISK,                 // *
-    TOKEN_SLASH,                    // /
-    TOKEN_MODULO,                   // %
-    TOKEN_AND,                      // &&
-    TOKEN_OR,                       // ||
-    TOKEN_NOT,                      // !
-    TOKEN_EQUALITY,                 // ==
-    TOKEN_NOT_EQ,                   // !=
-    TOKEN_GRT,                      // >
-    TOKEN_LSS,                      // <
-    TOKEN_LTE,                      // <=
-    TOKEN_GTE,                      // >=
-    TOKEN_LSHIFT,                   // <<
-    TOKEN_RSHIFT,                   // >>
-    TOKEN_AMPERSAND,                // &
-    TOKEN_PIPE,                     // |
-    TOKEN_CARET,                    // ^
-    TOKEN_TILDE,                    // ~
-    TOKEN_BRACE_OPEN,               // {
-    TOKEN_BRACE_CLOSE,              // }
-    TOKEN_PAREN_OPEN,               // (
-    TOKEN_PAREN_CLOSE,              // )
-    TOKEN_COMMA,                    // ,
-    TOKEN_SEMICOLON,                // ;
-    TOKEN_COLON,                    // :
-    TOKEN_DOT,                      // .
-    TOKEN_RANGE,                    // ..
-    TOKEN_DOUBLE_RIGHT_ARROW,       // =>
-    TOKEN_RIGHT_ARROW,              // ->
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    And,
+    Or,
+    Not,
+    Equals,
+    NotEquals,
+    LessThan,
+    GreaterThan,
+    LessThanOrEqualTo,
+    GreaterThanOrEqualTo,
+    Assign,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    LeftBracket,
+    RightBracket,
+    Comma,
+    Dot,
+    Range,
+    Ampersand,
+    Pipe,
+    Caret,
+    Tilde,
 
-    // Misc
-    TOKEN_COMMENT,      // Comment
-    TOKEN_EOF,          // End of file
-    TOKEN_INVALID       // Invalid token
-} TokenType;
-
-static const char* keywords[] = {
-    // Variable Declarations
-    "let",
-    "mut",
-
-    // Data Types
-    "int",
-    "float",
-    "bool",
-    "char",
-
-    // Control Flow
-    "if",
-    "else",
-    "for",
-    "in",
-    "while",
-    "break",
-    "continue",
-
-    // Boolean Literals
-    "true",
-    "false",
-
-    // Functions
-    "func",
-    "return",
-
-    // Modules and Types
-    "import",
-    "struct",
-    "enum",
-    "type",
-    "match",
-    "as"
+    // Misc 
+    Comment,
+    Unknown,
 };
 
+inline std::string token_type_to_string(TokenType type) {
+    switch (type) {
+        case TokenType::Let: return "Let";
+        case TokenType::Mut: return "Mut";
+        case TokenType::If: return "If";
+        case TokenType::Else: return "Else";
+        case TokenType::While: return "While";
+        case TokenType::For: return "For";
+        case TokenType::In: return "In";
+        case TokenType::True: return "True";
+        case TokenType::False: return "False";
+        case TokenType::IntegerLiteral: return "IntegerLiteral";
+        case TokenType::StringLiteral: return "StringLiteral";
+        case TokenType::Identifier: return "Identifier";
+        case TokenType::Plus: return "Plus";
+        case TokenType::Minus: return "Minus";
+        case TokenType::Star: return "Star";
+        case TokenType::Slash: return "Slash";
+        case TokenType::And: return "And";
+        case TokenType::Or: return "Or";
+        case TokenType::Not: return "Not";
+        case TokenType::Equals: return "Equals";
+        case TokenType::NotEquals: return "NotEquals";
+        case TokenType::LessThan: return "LessThan";
+        case TokenType::GreaterThan: return "GreaterThan";
+        case TokenType::LessThanOrEqualTo: return "LessThanOrEqualTo";
+        case TokenType::GreaterThanOrEqualTo: return "GreaterThanOrEqualTo";
+        case TokenType::Assign: return "Assign";
+        case TokenType::LeftParen: return "LeftParen";
+        case TokenType::RightParen: return "RightParen";
+        case TokenType::LeftBrace: return "LeftBrace";
+        case TokenType::RightBrace: return "RightBrace";
+        case TokenType::LeftBracket: return "LeftBracket";
+        case TokenType::RightBracket: return "RightBracket";
+        case TokenType::Comma: return "Comma";
+        case TokenType::Dot: return "Dot";
+        case TokenType::Range: return "Range";
+        case TokenType::Ampersand: return "Ampersand";
+        case TokenType::Pipe: return "Pipe";
+        case TokenType::Caret: return "Caret";
+        case TokenType::Tilde: return "Tilde";
+        case TokenType::Comment: return "Comment";
+        case TokenType::Unknown: return "Unknown";
+        default: return "Unknown";
+    }
+}
 
-typedef struct {
+class Token {
+public: 
     TokenType type;
-    char* value;
-} Token;
+    std::string value;
+    size_t line;
+    size_t column;
 
-typedef struct {
-    Token* tokens;
-    size_t count;
-    size_t capacity;
-} TokenList;
+    Token(TokenType type, std::string value, size_t line, size_t column) {
+        this->type = type;
+        this->value = value;
+        this->line = line;
+        this->column = column;
+    }
 
-TokenList* create_token_list();
-void append_token(TokenList* list, Token token);
-void free_tokens(TokenList* list);
+    Token(TokenType type, std::string value) {
+        this->type = type;
+        this->value = value;
+        this->line = 0;
+        this->column = 0;
+    }
 
-#endif 
+    Token(TokenType type) {
+        this->type = type;
+        this->value = "";
+        this->line = 0;
+        this->column = 0;
+    }
+
+    inline bool operator==(const Token& other) const {
+        return this->type == other.type && this->value == other.value;
+    }
+
+    inline bool operator!=(const Token& other) const {
+        return this->type != other.type || this->value != other.value;
+    }
+
+    inline std::string to_string() {
+                std::stringstream ss;
+        ss << "Token(" << token_type_to_string(this->type);
+        if (!this->value.empty()) {
+            ss << ", " << this->value;
+        }
+        if (this->line != 0 || this->column != 0) {
+            ss << ", " << this->line << ", " << this->column;
+        }
+        ss << ")";
+        return ss.str();
+    }
+};
+
+inline std::string token_vector_to_string(std::vector<Token> tokens) {
+    std::stringstream ss;
+    ss << "[";
+    for (size_t i = 0; i < tokens.size(); i++) {
+        ss << tokens[i].to_string();
+        if (i < tokens.size() - 1) {
+            ss << ", ";
+        }
+    }
+    ss << "]";
+    return ss.str();
+}
