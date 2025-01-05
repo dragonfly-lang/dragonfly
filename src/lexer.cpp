@@ -1,177 +1,355 @@
 #include "dragon/lexer.h"
 
-Lexer* create_lexer(const char* source) {
-    Lexer* lexer = (Lexer *)malloc(sizeof(Lexer));
-    lexer->source = strdup(source);
-    lexer->position = 0;
-    return lexer;
+#include <iostream>
+
+Lexer::Lexer(std::string input) {
+    this->input = input;
 }
 
-void free_lexer(Lexer* lexer) {
-    free(lexer->source);
-    free(lexer);
+std::vector<Token> Lexer::lex(std::string input) {
+    if (!this->input.empty()) this->reset();
+    this->input = input;
+    return this->lex();
 }
 
-TokenList* tokenise(const char* source) {
-    TokenList* tokens = create_token_list();
+void Lexer::reset() {
+    this->tokens.clear();
+    this->input = "";
+    this->index = 0;
+    this->line = 1;
+    this->column = 1;
+}
 
-    if (source == NULL || strlen(source) == 0) {
-        return tokens;
-    }
+std::vector<Token> Lexer::lex() {
+    while (this->index < this->input.size()) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value()) break;
+        char c = opt_c.value();
+        std::cout << "lexing starting with: " << c << std::endl;
 
-    Lexer* lexer = create_lexer(source);
-
-    while (lexer->position < strlen(lexer->source)) {
-        char c = lexer->source[lexer->position];
-
-        while (c == ' ' || c == '\n' || c == '\t') {
-            lexer->position++;
-            c = lexer->source[lexer->position];
+        if (std::isspace(c)) {
+            this->advance();
+            continue;
         }
 
-        Token token = {TOKEN_INVALID, NULL};
-        if (isdigit(c)) {
-            token = lex_number(lexer);
-        } else if (isalpha(c)) {
-            token = lex_identifier(lexer);
-        } else if (c == '"' || c == '\'') {
-            token = lex_string(lexer);
+        if (std::isalpha(c) || c == '_') {
+            this->tokens.push_back(this->lex_identifier());
+            continue;
+        }
+
+        if (std::isdigit(c)) {
+            this->tokens.push_back(this->lex_number());
+            continue;
+        }
+
+        if (c == '"') {
+            std::cout << "lexing string" << std::endl;
+            this->tokens.push_back(this->lex_string());
+            continue;
+        }
+
+        if (c == '/' && this->peek_next() == '/') {
+            this->tokens.push_back(this->lex_single_line_comment());
+            continue;
+        }
+
+        if (c == '/' && this->peek_next() == '*') {
+            this->tokens.push_back(this->lex_multi_line_comment());
+            continue;
+        }
+
+        this->tokens.push_back(this->lex_symbol());
+    }
+
+    return this->tokens;
+}
+
+Token Lexer::lex_identifier() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    while (true) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value() || !(std::isalnum(opt_c.value()) || opt_c.value() == '_')) {
+            break;
+        }
+        value += this->advance().value();
+        std::cout << "building value: " << value << std::endl;
+    }
+
+    TokenType type = this->get_keyword(value);
+    std::cout << "type: " << token_type_to_string(type) << std::endl;
+    std::cout << "value: " << "\"" << value << "\"" << std::endl;
+    return Token(type, value, line, column);
+}
+
+Token Lexer::lex_number() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    while (true) {
+        auto opt_c = this->peek();
+        if (opt_c.has_value() && opt_c.value() == '_') {
+            this->advance();
+            continue;
+        }
+        if (!opt_c.has_value() || !std::isdigit(opt_c.value())) {
+            break;
+        }
+        value += this->advance().value();
+    }
+
+    return Token(TokenType::IntegerLiteral, value, line, column);
+}
+
+Token Lexer::lex_string() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    this->advance(); // Skip the opening quote
+
+    while (true) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value() || opt_c.value() == '"') {
+            break;
+        }
+
+        if (opt_c.value() == '\\') {
+            this->advance(); // Skip the backslash
+            auto escaped_char = this->advance();
+            if (escaped_char.has_value()) {
+                switch (escaped_char.value()) {
+                    case 'n': value += '\n'; break;
+                    case 't': value += '\t'; break;
+                    case 'r': value += '\r'; break;
+                    case '\\': value += '\\'; break;
+                    case '"': value += '"'; break;
+                    default: value += '\\'; value += escaped_char.value(); break;
+                }
+            }
         } else {
-            token = lex_symbol(lexer);
+            value += this->advance().value();
         }
-
-        append_token(tokens, token);
     }
 
-    free_lexer(lexer);
+    this->advance(); // Skip the closing quote
 
-    return tokens;
+    return Token(TokenType::StringLiteral, value, line, column);
 }
 
-Token lex_number(Lexer* lexer) {
-    size_t start = lexer->position;
-    while (isdigit(lexer->source[lexer->position])) {
-        lexer->position++;
+Token Lexer::lex_symbol() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    auto opt_c = this->peek();
+    if (!opt_c.has_value()) {
+        return Token(TokenType::Unknown, value, line, column);
     }
 
-    size_t length = lexer->position - start;
-    char* value = strndup(lexer->source + start, length);
-
-    Token token = {TOKEN_INTEGER, value};
-    return token;
-}
-
-Token lex_identifier(Lexer* lexer) {
-    size_t start = lexer->position;
-    while (isalnum(lexer->source[lexer->position])) {
-        lexer->position++;
-    }
-
-    size_t length = lexer->position - start;
-    char* value = strndup(lexer->source + start, length);
-
-    Token token = {TOKEN_IDENTIFIER, value};
-
-    token = is_keyword(token);
-
-    return token;
-}
-
-Token lex_symbol(Lexer* lexer) {
-    char c = lexer->source[lexer->position];
-    TokenType type = TOKEN_INVALID;
-    char* value = NULL;
-
+    char c = opt_c.value();
     switch (c) {
-        case '=':
-            type = TOKEN_EQUALS;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
         case '+':
-            type = TOKEN_PLUS;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '{':
-            type = TOKEN_BRACE_OPEN;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '}':
-            type = TOKEN_BRACE_CLOSE;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '(':
-            type = TOKEN_PAREN_OPEN;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case ')':
-            type = TOKEN_PAREN_CLOSE;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case ',':
-            type = TOKEN_COMMA;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '>':
-            type = TOKEN_GRT;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
+            value += this->advance().value();
+            return Token(TokenType::Plus, value, line, column);
         case '-':
-            if (lexer->source[lexer->position + 1] == '>') {
-                type = TOKEN_RIGHT_ARROW;
-                value = strndup(lexer->source + lexer->position, 2);
-                lexer->position++;
-            } else {
-                type = TOKEN_INVALID;
-                value = strndup(lexer->source + lexer->position, 1);
+            value += this->advance().value();
+            return Token(TokenType::Minus, value, line, column);
+        case '*':
+            value += this->advance().value();
+            return Token(TokenType::Star, value, line, column);
+        case '/':
+            value += this->advance().value();
+            return Token(TokenType::Slash, value, line, column);
+        case '!':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::NotEquals, value, line, column);
             }
-            break;
+            return Token(TokenType::Not, value, line, column);
+        case '=':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::Equals, value, line, column);
+            }
+            return Token(TokenType::Assign, value, line, column);
+        case '<':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::LessThanOrEqualTo, value, line, column);
+            }
+            return Token(TokenType::LessThan, value, line, column);
+        case '>':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::GreaterThanOrEqualTo, value, line, column);
+            }
+            return Token(TokenType::GreaterThan, value, line, column);
+        case '&':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '&') {
+                value += this->advance().value();
+                return Token(TokenType::And, value, line, column);
+            }
+            return Token(TokenType::Ampersand, value, line, column);
+        case '|':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '|') {
+                value += this->advance().value();
+                return Token(TokenType::Or, value, line, column);
+            }
+            return Token(TokenType::Pipe, value, line, column);
+        case '^':
+            value += this->advance().value();
+            return Token(TokenType::Caret, value, line, column);
+        case '~':
+            value += this->advance().value();
+            return Token(TokenType::Tilde, value, line, column);
+        case '(':
+            value += this->advance().value();
+            return Token(TokenType::LeftParen, value, line, column);
+        case ')':
+            value += this->advance().value();
+            return Token(TokenType::RightParen, value, line, column);
+        case '{':
+            value += this->advance().value();
+            return Token(TokenType::LeftBrace, value, line, column);
+        case '}':
+            value += this->advance().value();
+            return Token(TokenType::RightBrace, value, line, column);
+        case '[':
+            value += this->advance().value();
+            return Token(TokenType::LeftBracket, value, line, column);
+        case ']':
+            value += this->advance().value();
+            return Token(TokenType::RightBracket, value, line, column);
+        case ',':
+            value += this->advance().value();
+            return Token(TokenType::Comma, value, line, column);
         case '.':
-            printf("Next char: %c\n", lexer->source[lexer->position + 1]);
-            if (lexer->source[lexer->position + 1] == '.') {
-                type = TOKEN_RANGE;
-                value = strndup(lexer->source + lexer->position, 2);
-                lexer->position++;
-            } else {
-                type = TOKEN_INVALID;
-                value = strndup(lexer->source + lexer->position, 1);
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '.') {
+                value += this->advance().value();
+                return Token(TokenType::Range, value, line, column);
             }
-            break;
+            return Token(TokenType::Dot, value, line, column);
         default:
-            type = TOKEN_INVALID;
-            value = strndup(lexer->source + lexer->position, 1);
+            value += this->advance().value();
+            return Token(TokenType::Unknown, value, line, column);
+    }
+}
+
+Token Lexer::lex_single_line_comment() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    while (true) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value() || opt_c.value() == '\n') {
             break;
-    }
-
-    lexer->position++;
-
-    Token token = {type, value};
-    return token;
-}
-
-Token lex_string(Lexer* lexer) {
-    char quote = lexer->source[lexer->position];
-    lexer->position++;
-
-    size_t start = lexer->position;
-    while (lexer->source[lexer->position] != quote) {
-        lexer->position++;
-    }
-
-    size_t length = lexer->position - start;
-    char* value = strndup(lexer->source + start, length);
-
-    lexer->position++;
-
-    Token token = {TOKEN_STRING, value};
-    return token;
-}
-
-Token is_keyword(Token token) {
-    for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
-        if (strcmp(token.value, keywords[i]) == 0) {
-            token.type = (TokenType)i;  
-            return token;
         }
+        value += this->advance().value();
     }
-    return token;  
+
+    return Token(TokenType::Comment, value, line, column);
+}
+
+Token Lexer::lex_multi_line_comment() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    while (true) {
+        auto opt_c = this->peek();
+        auto opt_next_c = this->peek_next();
+        if (!opt_c.has_value() || !opt_next_c.has_value()) {
+            break;
+        }
+        if (opt_c.value() == '*' && opt_next_c.value() == '/') {
+            value += this->advance().value();
+            value += this->advance().value();
+            break;
+        }
+        value += this->advance().value();
+    }
+
+    return Token(TokenType::Comment, value, line, column);
+}
+
+TokenType Lexer::get_keyword(std::string value) {
+    if (value == "let") {
+        return TokenType::Let;
+    }
+
+    if (value == "mut") {
+        return TokenType::Mut;
+    }
+
+    if (value == "if") {
+        return TokenType::If;
+    }
+
+    if (value == "else") {
+        return TokenType::Else;
+    }
+
+    if (value == "while") {
+        return TokenType::While;
+    }
+
+    if (value == "for") {
+        return TokenType::For;
+    }
+
+    if (value == "in") {
+        return TokenType::In;
+    }
+
+    if (value == "true") {
+        return TokenType::True;
+    }
+
+    if (value == "false") {
+        return TokenType::False;
+    }
+
+    return TokenType::Identifier;
+}
+
+std::optional<char> Lexer::peek() const {
+    if (this->index < this->input.size()) {
+        return this->input[this->index];
+    }
+    return std::nullopt;
+}
+
+std::optional<char> Lexer::peek_next() const {
+    if (this->index + 1 < this->input.size()) {
+        return this->input[this->index + 1];
+    }
+    return std::nullopt;
+}
+
+std::optional<char> Lexer::advance() {
+    if (this->index < this->input.size()) {
+        char c = this->input[this->index];
+        this->index++;
+        this->column++;
+
+        if (c == '\n') {
+            this->line++;
+            this->column = 1;
+        }
+
+        return c;
+    }
+    return std::nullopt;
 }

@@ -10,7 +10,6 @@ include_directories(include)
 
 set(SOURCES
     src/lexer.cpp
-    src/token.cpp
     src/parser.cpp
     src/codegen.cpp
     src/semantics.cpp
