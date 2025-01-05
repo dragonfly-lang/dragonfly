@@ -37,6 +37,24 @@ public:
     inline bool operator!=(const Token& other) const {
         return this->type != other.type || this->value != other.value;
     }
+
+    inline std::string to_string() {
+        if (this->line == 0 && this->column == 0 && this->value == "") {
+            return std::format("Token({})", this->type);
+        }
+
+        if (this->line == 0 && this->column == 0) {
+            return std::format("Token({}, {})", this->type, this->value);
+        } 
+
+        if (this->value == "") {
+            return std::format("Token({}, {}, {}, {})", this->type, this->line, this->column);
+        }
+
+        return std::format("Token({}, {}, {}, {})", this->type, this->value, this->line, this->column);
+    }
+};
+
     // Keywords
     TOKEN_LET_KW,                   // "let"
     TOKEN_MUT_KW,                   // "mut"
