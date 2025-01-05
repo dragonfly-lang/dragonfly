@@ -18,7 +18,7 @@ void Lexer::reset() {
     this->index = 0;
     this->line = 1;
     this->column = 1;
-    }
+}
 
 std::vector<Token> Lexer::lex() {
     while (this->index < this->input.size()) {
@@ -56,7 +56,7 @@ std::vector<Token> Lexer::lex() {
         if (c == '/' && this->peek_next() == '*') {
             this->tokens.push_back(this->lex_multi_line_comment());
             continue;
-    }
+        }
 
         this->tokens.push_back(this->lex_symbol());
     }
@@ -82,7 +82,7 @@ Token Lexer::lex_identifier() {
     std::cout << "type: " << token_type_to_string(type) << std::endl;
     std::cout << "value: " << "\"" << value << "\"" << std::endl;
     return Token(type, value, line, column);
-    }
+}
 
 Token Lexer::lex_number() {
     std::string value = "";
@@ -261,17 +261,27 @@ Token Lexer::lex_single_line_comment() {
 
     return Token(TokenType::Comment, value, line, column);
 }
+
+Token Lexer::lex_multi_line_comment() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    while (true) {
+        auto opt_c = this->peek();
+        auto opt_next_c = this->peek_next();
+        if (!opt_c.has_value() || !opt_next_c.has_value()) {
             break;
-        default:
-            type = TOKEN_INVALID;
-            value = strndup(lexer->source + lexer->position, 1);
+        }
+        if (opt_c.value() == '*' && opt_next_c.value() == '/') {
+            value += this->advance().value();
+            value += this->advance().value();
             break;
+        }
+        value += this->advance().value();
     }
 
-    lexer->position++;
-
-    Token token = {type, value};
-    return token;
+    return Token(TokenType::Comment, value, line, column);
 }
 
 TokenType Lexer::get_keyword(std::string value) {
@@ -312,7 +322,7 @@ TokenType Lexer::get_keyword(std::string value) {
     }
 
     return TokenType::Identifier;
-    }
+}
 
 std::optional<char> Lexer::peek() const {
     if (this->index < this->input.size()) {
