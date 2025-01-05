@@ -149,15 +149,45 @@ Token lex_symbol(Lexer* lexer) {
     return token;
 }
 
-Token lex_string(Lexer* lexer) {
-    char quote = lexer->source[lexer->position];
-    lexer->position++;
-
-    size_t start = lexer->position;
-    while (lexer->source[lexer->position] != quote) {
-        lexer->position++;
+TokenType Lexer::get_keyword(std::string value) {
+    if (value == "let") {
+        return TokenType::Let;
     }
 
+    if (value == "mut") {
+        return TokenType::Mut;
+    }
+
+    if (value == "if") {
+        return TokenType::If;
+    }
+
+    if (value == "else") {
+        return TokenType::Else;
+    }
+
+    if (value == "while") {
+        return TokenType::While;
+    }
+
+    if (value == "for") {
+        return TokenType::For;
+    }
+
+    if (value == "in") {
+        return TokenType::In;
+    }
+
+    if (value == "true") {
+        return TokenType::True;
+    }
+
+    if (value == "false") {
+        return TokenType::False;
+    }
+
+    return TokenType::Identifier;
+    }
 
 std::optional<char> Lexer::peek() const {
     if (this->index < this->input.size()) {
