@@ -1,10 +1,11 @@
 #include "dragon/lexer.h"
 
-Lexer* create_lexer(const char* source) {
-    Lexer* lexer = (Lexer *)malloc(sizeof(Lexer));
-    lexer->source = strdup(source);
-    lexer->position = 0;
-    return lexer;
+#include <iostream>
+
+Lexer::Lexer(std::string input) {
+    this->input = input;
+}
+
 }
 
 void free_lexer(Lexer* lexer) {
