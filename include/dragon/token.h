@@ -1,130 +1,110 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#pragma once
 
-#include <stddef.h>
+#include <string>
+#include <format>
 
-typedef enum {
-    // Keywords
-    TOKEN_LET_KW,                   // "let"
-    TOKEN_MUT_KW,                   // "mut"
-    TOKEN_INT_KW,                   // "int"
-    TOKEN_IF_KW,                    // "if"
-    TOKEN_ELSE_KW,                  // "else"
-    TOKEN_FOR_KW,                   // "for"
-    TOKEN_IN_KW,                    // "in"
-    TOKEN_FUNC_KW,                  // "func"
-    TOKEN_RETURN_KW,                // "return"
-    TOKEN_WHILE_KW,                 // "while"
-    TOKEN_TRUE_KW,                  // "true"
-    TOKEN_FALSE_KW,                 // "false"
-    TOKEN_BOOL_KW,                  // "bool"
-    TOKEN_BREAK_KW,                 // "break"
-    TOKEN_CONTINUE_KW,              // "continue"
-    TOKEN_STRUCT_KW,                // "struct"
-    TOKEN_ENUM_KW,                  // "enum"
-    TOKEN_TYPE_KW,                  // "type"
-    TOKEN_MATCH_KW,                 // "match"
-    TOKEN_IMPORT_KW,                // "import"
-    TOKEN_AS_KW,                    // "as"
+enum class TokenType;
 
-    // Literals
-    TOKEN_INTEGER,                  // 123
-    TOKEN_FLOAT,                    // 123.45
-    TOKEN_IDENTIFIER,               // variable_name
-    TOKEN_STRING,                   // "string"
-    TOKEN_CHAR,                     // 'c'
+class Token {
+public: 
+    TokenType type;
+    std::string value;
+    size_t line;
+    size_t column;
 
-    // Symbols
-    TOKEN_EQUALS,                   // =
-    TOKEN_PLUS,                     // +
-    TOKEN_MINUS,                    // -
-    TOKEN_ASTERISK,                 // *
-    TOKEN_SLASH,                    // /
-    TOKEN_MODULO,                   // %
-    TOKEN_AND,                      // &&
-    TOKEN_OR,                       // ||
-    TOKEN_NOT,                      // !
-    TOKEN_EQUALITY,                 // ==
-    TOKEN_NOT_EQ,                   // !=
-    TOKEN_GRT,                      // >
-    TOKEN_LSS,                      // <
-    TOKEN_LTE,                      // <=
-    TOKEN_GTE,                      // >=
-    TOKEN_LSHIFT,                   // <<
-    TOKEN_RSHIFT,                   // >>
-    TOKEN_AMPERSAND,                // &
-    TOKEN_PIPE,                     // |
-    TOKEN_CARET,                    // ^
-    TOKEN_TILDE,                    // ~
-    TOKEN_BRACE_OPEN,               // {
-    TOKEN_BRACE_CLOSE,              // }
-    TOKEN_PAREN_OPEN,               // (
-    TOKEN_PAREN_CLOSE,              // )
-    TOKEN_COMMA,                    // ,
-    TOKEN_SEMICOLON,                // ;
-    TOKEN_COLON,                    // :
-    TOKEN_DOT,                      // .
-    TOKEN_RANGE,                    // ..
-    TOKEN_DOUBLE_RIGHT_ARROW,       // =>
-    TOKEN_RIGHT_ARROW,              // ->
+    Token(TokenType type, std::string value, size_t line, size_t column) {
+        this->type = type;
+        this->value = value;
+        this->line = line;
+        this->column = column;
+    }
 
-    // Misc
-    TOKEN_COMMENT,      // Comment
-    TOKEN_EOF,          // End of file
-    TOKEN_INVALID       // Invalid token
-} TokenType;
+    Token(TokenType type, std::string value) {
+        this->type = type;
+        this->value = value;
+        this->line = 0;
+        this->column = 0;
+    }
 
-static const char* keywords[] = {
-    // Variable Declarations
-    "let",
-    "mut",
+    Token(TokenType type) {
+        this->type = type;
+        this->value = "";
+        this->line = 0;
+        this->column = 0;
+    }
 
-    // Data Types
-    "int",
-    "float",
-    "bool",
-    "char",
+    inline bool operator==(const Token& other) const {
+        return this->type == other.type && this->value == other.value;
+    }
 
-    // Control Flow
-    "if",
-    "else",
-    "for",
-    "in",
-    "while",
-    "break",
-    "continue",
+    inline bool operator!=(const Token& other) const {
+        return this->type != other.type || this->value != other.value;
+    }
 
-    // Boolean Literals
-    "true",
-    "false",
+    inline std::string to_string() {
+        if (this->line == 0 && this->column == 0 && this->value == "") {
+            return std::format("Token({})", this->type);
+        }
 
-    // Functions
-    "func",
-    "return",
+        if (this->line == 0 && this->column == 0) {
+            return std::format("Token({}, {})", this->type, this->value);
+        } 
 
-    // Modules and Types
-    "import",
-    "struct",
-    "enum",
-    "type",
-    "match",
-    "as"
+        if (this->value == "") {
+            return std::format("Token({}, {}, {}, {})", this->type, this->line, this->column);
+        }
+
+        return std::format("Token({}, {}, {}, {})", this->type, this->value, this->line, this->column);
+    }
 };
 
+enum class TokenType {
+    // Keywords
+    Let,
+    Mut,
+    If,
+    Else,
+    While,
+    For,
+    In,
+    True,
+    False,
 
-typedef struct {
-    TokenType type;
-    char* value;
-} Token;
+    // Literals
+    IntegerLiteral,
+    StringLiteral,
+    Identifier,
 
-typedef struct {
-    Token* tokens;
-    size_t count;
-    size_t capacity;
-} TokenList;
+    // Symbols
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    And,
+    Or,
+    Not,
+    Equals,
+    NotEquals,
+    LessThan,
+    GreaterThan,
+    LessThanOrEqualTo,
+    GreaterThanOrEqualTo,
+    Assign,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    LeftBracket,
+    RightBracket,
+    Comma,
+    Dot,
+    Range,
+    Ampersand,
+    Pipe,
+    Caret,
+    Tilde,
 
-TokenList* create_token_list();
-void append_token(TokenList* list, Token token);
-void free_tokens(TokenList* list);
-
-#endif 
+    // Misc 
+    Comment,
+    Unknown,
+};

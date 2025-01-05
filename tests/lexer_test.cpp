@@ -76,7 +76,7 @@ TEST(LexerTests, StringLiterals) {
         "\"Abcdefghijklmnopqrstuvwxyz @#][{};;@'><,.//?)(*&^%$£1234567890+_-=`¬\\|\""
 
     };
-    const std::array<Token, 1> validTokens = {
+    const std::array<Token, 3> validTokens = {
         Token(TokenType::StringLiteral, "Enter username: "),
         Token(TokenType::StringLiteral, "This is a string with a escape characters \" \n \t "),
         Token(TokenType::StringLiteral, "Abcdefghijklmnopqrstuvwxyz @#][{};;@'><,.//?)(*&^%$£1234567890+_-=`¬\\|")
@@ -85,7 +85,7 @@ TEST(LexerTests, StringLiterals) {
     Lexer lexer;
 
     for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_string_literal(input[i]);
+        Token t = lexer.lex_string(input[i]);
         ASSERT_TRUE(validTokens[i] == t);
     }
 }
@@ -113,42 +113,53 @@ TEST(LexerTests, Integer) {
     }
 }
 
-// Test for operators
-TEST(LexerTests, Operators) {
-    const std::array<std::string, 5> input = {
-        "+", "-", "*", "/", "="
+// Test for all symbols
+TEST(LexerTests, Symbols) {
+    const std::array<std::string, 18> input = {
+        "+",
+        "-",
+        "*",
+        "/",
+        "=",
+        "==",
+        "!=",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "&&",
+        "||",
+        "!",
+        "&",
+        "|",
+        "^",
+        "~"
     };
-    const std::array<Token, 5> validTokens = {
+    const std::array<Token, 18> validTokens = {
         Token(TokenType::Plus, "+"),
         Token(TokenType::Minus, "-"),
-        Token(TokenType::Asterisk, "*"),
+        Token(TokenType::Star, "*"),
         Token(TokenType::Slash, "/"),
-        Token(TokenType::Equal, "=")
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Equals, "=="),
+        Token(TokenType::NotEquals, "!="),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::GreaterThan, ">"),
+        Token(TokenType::LessThanOrEqualTo, "<="),
+        Token(TokenType::GreaterThanOrEqualTo, ">="),
+        Token(TokenType::And, "&&"),
+        Token(TokenType::Or, "||"),
+        Token(TokenType::Not, "!"),
+        Token(TokenType::Ampersand, "&"),
+        Token(TokenType::Pipe, "|"),
+        Token(TokenType::Caret, "^"),
+        Token(TokenType::Tilde, "~")
     };
 
     Lexer lexer;
 
     for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_operator(input[i]);
-        ASSERT_TRUE(validTokens[i] == t);
-    }
-}
-
-// Test for punctuation
-TEST(LexerTests, Punctuation) {
-    const std::array<std::string, 3> input = {
-        "{", "}", ";"
-    };
-    const std::array<Token, 3> validTokens = {
-        Token(TokenType::LeftBrace, "{"),
-        Token(TokenType::RightBrace, "}"),
-        Token(TokenType::Semicolon, ";")
-    };
-
-    Lexer lexer;
-
-    for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_punctuation(input[i]);
+        Token t = lexer.lex_symbol(input[i]);
         ASSERT_TRUE(validTokens[i] == t);
     }
 }
@@ -196,7 +207,7 @@ TEST(LexerTests, Arithmetic) {
         "1 * 2",
         "1 / 2"
     };
-    const std::array<std::vector<Token>, 4> validTokens = {
+    const std::vector<std::vector<Token>> validTokens = {
         {
             Token(TokenType::IntegerLiteral, "1"),
             Token(TokenType::Plus, "+"),
@@ -236,7 +247,7 @@ TEST(LexerTests, Boolean) {
         "true == false"
         "true != false"
     };
-    const std::array<std::vector<Token>, 4> validTokens = {
+    const std::vector<std::vector<Token>> validTokens = {
         {
             Token(TokenType::True, "true"),
             Token(TokenType::And, "&&"),
@@ -248,12 +259,12 @@ TEST(LexerTests, Boolean) {
             Token(TokenType::False, "false")
         },
         {
-            Token(TokenType::Bang, "!"),
+            Token(TokenType::Not, "!"),
             Token(TokenType::True, "true")
         },
         {
             Token(TokenType::True, "true"),
-            Token(TokenType::EqualEqual, "=="),
+            Token(TokenType::Equals, "=="),
             Token(TokenType::False, "false")
         }
     };
@@ -274,25 +285,25 @@ TEST(LexerTests, Relational) {
         "1 <= 2",
         "1 >= 2"
     };
-    const std::array<std::vector<Token>, 4> validTokens = {
+    const std::vector<std::vector<Token>> validTokens = {
         {
             Token(TokenType::IntegerLiteral, "1"),
-            Token(TokenType::Less, "<"),
+            Token(TokenType::LessThan, "<"),
             Token(TokenType::IntegerLiteral, "2")
         },
         {
             Token(TokenType::IntegerLiteral, "1"),
-            Token(TokenType::Greater, ">"),
+            Token(TokenType::GreaterThan, ">"),
             Token(TokenType::IntegerLiteral, "2")
         },
         {
             Token(TokenType::IntegerLiteral, "1"),
-            Token(TokenType::LessEqual, "<="),
+            Token(TokenType::LessThanOrEqualTo, "<="),
             Token(TokenType::IntegerLiteral, "2")
         },
         {
             Token(TokenType::IntegerLiteral, "1"),
-            Token(TokenType::GreaterEqual, ">="),
+            Token(TokenType::LessThanOrEqualTo, ">="),
             Token(TokenType::IntegerLiteral, "2")
         }
     };
@@ -313,7 +324,7 @@ TEST(LexerTests, Bitwise) {
         "1 ^ 2",
         "~1"
     };
-    const std::array<std::vector<Token>, 4> validTokens = {
+    const std::vector<std::vector<Token>> validTokens = {
         {
             Token(TokenType::IntegerLiteral, "1"),
             Token(TokenType::Ampersand, "&"),
@@ -356,20 +367,20 @@ TEST(LexerTests, Mixed) {
         Token(TokenType::IntegerLiteral, "4"),
         Token(TokenType::Minus, "-"),
         Token(TokenType::IntegerLiteral, "5"),
-        Token(TokenType::EqualEqual, "=="),
-        Token(TokenType::Bang, "!"),
+        Token(TokenType::Equals, "=="),
+        Token(TokenType::Not, "!"),
         Token(TokenType::True, "true"),
         Token(TokenType::And, "&&"),
         Token(TokenType::IntegerLiteral, "7"),
-        Token(TokenType::Less, "<"),
+        Token(TokenType::LessThan, "<"),
         Token(TokenType::IntegerLiteral, "8"),
         Token(TokenType::Or, "||"),
         Token(TokenType::IntegerLiteral, "9"),
-        Token(TokenType::Greater, ">"),
+        Token(TokenType::GreaterThan, ">"),
         Token(TokenType::IntegerLiteral, "10"),
         Token(TokenType::And, "&&"),
         Token(TokenType::IntegerLiteral, "11"),
-        Token(TokenType::LessEqual, "<="),
+        Token(TokenType::LessThanOrEqualTo, "<="),
         Token(TokenType::IntegerLiteral, "12"),
         Token(TokenType::Pipe, "|"),
         Token(TokenType::IntegerLiteral, "13"),
@@ -408,7 +419,7 @@ TEST (LexerTests, VariableDeclarationWithExpr) {
         Token(TokenType::Let, "let"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Identifier, "int"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::IntegerLiteral, "1"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "2")
@@ -426,7 +437,7 @@ TEST(LexerTests, VariableDeclarationWithoutType) {
     const std::vector<Token> validTokens = {
         Token(TokenType::Let, "let"),
         Token(TokenType::Identifier, "variable"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::IntegerLiteral, "1"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "2")
@@ -446,7 +457,7 @@ TEST(LexerTests, MutableVariableDeclarationWithExpr) {
         Token(TokenType::Mut, "mut"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Identifier, "int"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::IntegerLiteral, "1"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "2")
@@ -481,7 +492,7 @@ TEST(LexerTests, MutableVariableDeclarationWithoutType) {
         Token(TokenType::Let, "let"),
         Token(TokenType::Mut, "mut"),
         Token(TokenType::Identifier, "variable"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::IntegerLiteral, "1"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "2")
@@ -498,7 +509,7 @@ TEST(LexerTests, Assignment) {
     const std::string input = "variable = 1 + 2";
     const std::vector<Token> validTokens = {
         Token(TokenType::Identifier, "variable"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::IntegerLiteral, "1"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "2")
@@ -558,11 +569,11 @@ TEST(LexerTests, WhileLoop) {
     const std::vector<Token> validTokens = {
         Token(TokenType::While, "while"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Less, "<"),
+        Token(TokenType::LessThan, "<"),
         Token(TokenType::IntegerLiteral, "10"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "x"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "1"),
@@ -587,7 +598,7 @@ TEST(LexerTests, ForLoop) {
         Token(TokenType::IntegerLiteral, "10"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "i"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "i"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "1"),
@@ -616,7 +627,7 @@ TEST(LexerTests, ForLoopWithExpr) {
         Token(TokenType::RightParen, ")"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "i"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "i"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "1"),
@@ -635,11 +646,11 @@ TEST(LexerTests, IfStatement) {
     const std::vector<Token> validTokens = {
         Token(TokenType::If, "if"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Less, "<"),
+        Token(TokenType::LessThan, "<"),
         Token(TokenType::IntegerLiteral, "10"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "x"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "1"),
@@ -658,11 +669,11 @@ TEST(LexerTests, ElseIfStatement) {
     const std::vector<Token> validTokens = {
         Token(TokenType::If, "if"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Less, "<"),
+        Token(TokenType::LessThan, "<"),
         Token(TokenType::IntegerLiteral, "10"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "x"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "1"),
@@ -670,11 +681,11 @@ TEST(LexerTests, ElseIfStatement) {
         Token(TokenType::Else, "else"),
         Token(TokenType::If, "if"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Greater, ">"),
+        Token(TokenType::GreaterThan, ">"),
         Token(TokenType::IntegerLiteral, "10"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "x"),
         Token(TokenType::Minus, "-"),
         Token(TokenType::IntegerLiteral, "1"),
@@ -693,11 +704,11 @@ TEST(LexerTests, ElseStatement) {
     const std::vector<Token> validTokens = {
         Token(TokenType::If, "if"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Less, "<"),
+        Token(TokenType::LessThan, "<"),
         Token(TokenType::IntegerLiteral, "10"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "x"),
         Token(TokenType::Plus, "+"),
         Token(TokenType::IntegerLiteral, "1"),
@@ -705,7 +716,7 @@ TEST(LexerTests, ElseStatement) {
         Token(TokenType::Else, "else"),
         Token(TokenType::LeftBrace, "{"),
         Token(TokenType::Identifier, "x"),
-        Token(TokenType::Equal, "="),
+        Token(TokenType::Assign, "="),
         Token(TokenType::Identifier, "x"),
         Token(TokenType::Minus, "-"),
         Token(TokenType::IntegerLiteral, "1"),
