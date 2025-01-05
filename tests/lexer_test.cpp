@@ -200,7 +200,7 @@ TEST(LexerTests, MultiLineComments) {
 
 // <expr> 
 // Arithmetic
-TEST(LexerTests, Arithmetic) {
+TEST(LexerTests, ArithmeticExpression) {
     const std::array<std::string, 4> input = {
         "1 + 2",
         "1 - 2",
@@ -239,7 +239,7 @@ TEST(LexerTests, Arithmetic) {
 
 // <expr> 
 // Boolean
-TEST(LexerTests, Boolean) {
+TEST(LexerTests, BooleanExpression) {
     const std::array<std::string, 4> input = {
         "true && false",
         "true || false",
@@ -278,7 +278,7 @@ TEST(LexerTests, Boolean) {
 
 // <expr> 
 // Relational
-TEST(LexerTests, Relational) {
+TEST(LexerTests, RelationalExpression) {
     const std::array<std::string, 4> input = {
         "1 < 2",
         "1 > 2",
@@ -317,7 +317,7 @@ TEST(LexerTests, Relational) {
 
 // <expr> 
 // bitwise
-TEST(LexerTests, Bitwise) {
+TEST(LexerTests, BitwiseExpression) {
     const std::array<std::string, 4> input = {
         "1 & 2",
         "1 | 2",
@@ -355,7 +355,7 @@ TEST(LexerTests, Bitwise) {
 
 // <expr>
 // Mixed
-TEST(LexerTests, Mixed) {
+TEST(LexerTests, MixedExpression) {
     const std::string input = "1 + 2 * 3 / 4 - 5 == !true && 7 < 8 || 9 > 10 && 11 <= 12 | 13 & 14 ^ 15";  
     const std::vector<Token> validTokens = {
         Token(TokenType::IntegerLiteral, "1"),
