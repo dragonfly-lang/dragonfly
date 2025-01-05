@@ -140,53 +140,111 @@ Token Lexer::lex_string() {
     return Token(TokenType::StringLiteral, value, line, column);
 }
 
-Token lex_symbol(Lexer* lexer) {
-    char c = lexer->source[lexer->position];
-    TokenType type = TOKEN_INVALID;
-    char* value = NULL;
+Token Lexer::lex_symbol() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
 
+    auto opt_c = this->peek();
+    if (!opt_c.has_value()) {
+        return Token(TokenType::Unknown, value, line, column);
+    }
+
+    char c = opt_c.value();
     switch (c) {
-        case '=':
-            type = TOKEN_EQUALS;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
         case '+':
-            type = TOKEN_PLUS;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '{':
-            type = TOKEN_BRACE_OPEN;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '}':
-            type = TOKEN_BRACE_CLOSE;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '(':
-            type = TOKEN_PAREN_OPEN;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case ')':
-            type = TOKEN_PAREN_CLOSE;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case ',':
-            type = TOKEN_COMMA;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
-        case '>':
-            type = TOKEN_GRT;
-            value = strndup(lexer->source + lexer->position, 1);
-            break;
+            value += this->advance().value();
+            return Token(TokenType::Plus, value, line, column);
         case '-':
-            if (lexer->source[lexer->position + 1] == '>') {
-                type = TOKEN_RIGHT_ARROW;
-                value = strndup(lexer->source + lexer->position, 2);
-                lexer->position++;
-            } else {
-                type = TOKEN_INVALID;
-                value = strndup(lexer->source + lexer->position, 1);
+            value += this->advance().value();
+            return Token(TokenType::Minus, value, line, column);
+        case '*':
+            value += this->advance().value();
+            return Token(TokenType::Star, value, line, column);
+        case '/':
+            value += this->advance().value();
+            return Token(TokenType::Slash, value, line, column);
+        case '!':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::NotEquals, value, line, column);
             }
+            return Token(TokenType::Not, value, line, column);
+        case '=':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::Equals, value, line, column);
+            }
+            return Token(TokenType::Assign, value, line, column);
+        case '<':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::LessThanOrEqualTo, value, line, column);
+            }
+            return Token(TokenType::LessThan, value, line, column);
+        case '>':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '=') {
+                value += this->advance().value();
+                return Token(TokenType::GreaterThanOrEqualTo, value, line, column);
+            }
+            return Token(TokenType::GreaterThan, value, line, column);
+        case '&':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '&') {
+                value += this->advance().value();
+                return Token(TokenType::And, value, line, column);
+            }
+            return Token(TokenType::Ampersand, value, line, column);
+        case '|':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '|') {
+                value += this->advance().value();
+                return Token(TokenType::Or, value, line, column);
+            }
+            return Token(TokenType::Pipe, value, line, column);
+        case '^':
+            value += this->advance().value();
+            return Token(TokenType::Caret, value, line, column);
+        case '~':
+            value += this->advance().value();
+            return Token(TokenType::Tilde, value, line, column);
+        case '(':
+            value += this->advance().value();
+            return Token(TokenType::LeftParen, value, line, column);
+        case ')':
+            value += this->advance().value();
+            return Token(TokenType::RightParen, value, line, column);
+        case '{':
+            value += this->advance().value();
+            return Token(TokenType::LeftBrace, value, line, column);
+        case '}':
+            value += this->advance().value();
+            return Token(TokenType::RightBrace, value, line, column);
+        case '[':
+            value += this->advance().value();
+            return Token(TokenType::LeftBracket, value, line, column);
+        case ']':
+            value += this->advance().value();
+            return Token(TokenType::RightBracket, value, line, column);
+        case ',':
+            value += this->advance().value();
+            return Token(TokenType::Comma, value, line, column);
+        case '.':
+            value += this->advance().value();
+            if (auto next = this->peek(); next.has_value() && next.value() == '.') {
+                value += this->advance().value();
+                return Token(TokenType::Range, value, line, column);
+            }
+            return Token(TokenType::Dot, value, line, column);
+        default:
+            value += this->advance().value();
+            return Token(TokenType::Unknown, value, line, column);
+    }
+}
             break;
         case '.':
             printf("Next char: %c\n", lexer->source[lexer->position + 1]);
