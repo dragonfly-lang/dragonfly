@@ -509,6 +509,26 @@ TEST(LexerTests, Assignment) {
     ASSERT_TRUE(validTokens == tokens);
 }
 
+// <args>
+// Example: x, y, 1 + 3
+TEST(LexerTests, Arguments) {
+    const std::string input = "x, y, 1 + 3";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::Identifier, "y"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "3")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
+
 // while <expr> { <statement(s)> }
 // for <identifier> in <identifier> { <statement(s)> }
 // for <identifier> in <expr> { <statement(s)> }
