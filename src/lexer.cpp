@@ -6,11 +6,11 @@ Lexer::Lexer(std::string input) {
     this->input = input;
 }
 
+std::vector<Token> Lexer::lex(std::string input) {
+    if (!this->input.empty()) this->reset();
+    this->input = input;
+    return this->lex();
 }
-
-void free_lexer(Lexer* lexer) {
-    free(lexer->source);
-    free(lexer);
 }
 
 TokenList* tokenise(const char* source) {
