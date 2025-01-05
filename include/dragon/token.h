@@ -1,9 +1,7 @@
-#ifndef TOKEN_H
-#define TOKEN_H
+#pragma once
 
-#include <stddef.h>
-
-typedef enum {
+#include <string>
+#include <format>
     // Keywords
     TOKEN_LET_KW,                   // "let"
     TOKEN_MUT_KW,                   // "mut"
