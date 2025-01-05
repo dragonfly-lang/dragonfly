@@ -58,6 +58,7 @@ TEST(LexerTests, Keywords) {
         Token(TokenType::In, "in"),
         Token(TokenType::True, "true"),
         Token(TokenType::False, "false"),
+        Token(TokenType::While, "while"),
     };
     Lexer lexer;
 
@@ -385,11 +386,11 @@ TEST(LexerTests, Mixed) {
     ASSERT_TRUE(validTokens == tokens);
 }
 
-// let <identifier> <identifier> 
+// let <identifier> <identifier>
 TEST(LexerTests, VariableDeclarationWithoutExpr) {
     const std::string input = "let variable int";
     const std::vector<Token>  validTokens = {
-        Token(TokenType::LetKeyword, "let"),
+        Token(TokenType::Let, "let"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Identifier, "int")
     };
@@ -404,7 +405,7 @@ TEST(LexerTests, VariableDeclarationWithoutExpr) {
 TEST (LexerTests, VariableDeclarationWithExpr) {
     const std::string input = "let variable int = 1 + 2";
     const std::vector<Token> validTokens = {
-        Token(TokenType::LetKeyword, "let"),
+        Token(TokenType::Let, "let"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Identifier, "int"),
         Token(TokenType::Equal, "="),
@@ -423,7 +424,7 @@ TEST (LexerTests, VariableDeclarationWithExpr) {
 TEST(LexerTests, VariableDeclarationWithoutType) {
     const std::string input = "let variable = 1 + 2";
     const std::vector<Token> validTokens = {
-        Token(TokenType::LetKeyword, "let"),
+        Token(TokenType::Let, "let"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Equal, "="),
         Token(TokenType::IntegerLiteral, "1"),
@@ -441,8 +442,8 @@ TEST(LexerTests, VariableDeclarationWithoutType) {
 TEST(LexerTests, MutableVariableDeclarationWithExpr) {
     const std::string input = "let mut variable int = 1 + 2";
     const std::vector<Token> validTokens = {
-        Token(TokenType::LetKeyword, "let"),
-        Token(TokenType::MutKeyword, "mut"),
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Identifier, "int"),
         Token(TokenType::Equal, "="),
@@ -461,8 +462,8 @@ TEST(LexerTests, MutableVariableDeclarationWithExpr) {
 TEST(LexerTests, MutableVariableDeclarationWithoutExpr) {
     const std::string input = "let mut variable int";
     const std::vector<Token> validTokens = {
-        Token(TokenType::LetKeyword, "let"),
-        Token(TokenType::MutKeyword, "mut"),
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Identifier, "int")
     };
@@ -477,8 +478,8 @@ TEST(LexerTests, MutableVariableDeclarationWithoutExpr) {
 TEST(LexerTests, MutableVariableDeclarationWithoutType) {
     const std::string input = "let mut variable = 1 + 2";
     const std::vector<Token> validTokens = {
-        Token(TokenType::LetKeyword, "let"),
-        Token(TokenType::MutKeyword, "mut"),
+        Token(TokenType::Let, "let"),
+        Token(TokenType::Mut, "mut"),
         Token(TokenType::Identifier, "variable"),
         Token(TokenType::Equal, "="),
         Token(TokenType::IntegerLiteral, "1"),
