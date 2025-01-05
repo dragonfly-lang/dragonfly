@@ -552,6 +552,28 @@ TEST(LexerTests, FunctionCall) {
 }
 
 // while <expr> { <statement(s)> }
+TEST(LexerTests, WhileLoop) {
+    const std::string input = "while x < 10 { x = x + 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::While, "while"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Less, "<"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Equal, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
+
 // for <identifier> in <identifier> { <statement(s)> }
 // for <identifier> in <expr> { <statement(s)> }
 // if <expr> { <statement(s)> }
