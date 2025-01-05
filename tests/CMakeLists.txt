@@ -5,7 +5,6 @@ target_include_directories(run_tests PRIVATE ../include)
 
 target_sources(run_tests PRIVATE
     ../src/lexer.cpp
-    ../src/token.cpp  
     ../src/parser.cpp
     ../src/semantics.cpp
 )
