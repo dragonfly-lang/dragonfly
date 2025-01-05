@@ -158,21 +158,33 @@ Token lex_string(Lexer* lexer) {
         lexer->position++;
     }
 
-    size_t length = lexer->position - start;
-    char* value = strndup(lexer->source + start, length);
 
-    lexer->position++;
-
-    Token token = {TOKEN_STRING, value};
-    return token;
+std::optional<char> Lexer::peek() const {
+    if (this->index < this->input.size()) {
+        return this->input[this->index];
+    }
+    return std::nullopt;
 }
 
-Token is_keyword(Token token) {
-    for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
-        if (strcmp(token.value, keywords[i]) == 0) {
-            token.type = (TokenType)i;  
-            return token;
-        }
+std::optional<char> Lexer::peek_next() const {
+    if (this->index + 1 < this->input.size()) {
+        return this->input[this->index + 1];
     }
-    return token;  
+    return std::nullopt;
+}
+
+std::optional<char> Lexer::advance() {
+    if (this->index < this->input.size()) {
+        char c = this->input[this->index];
+        this->index++;
+        this->column++;
+
+        if (c == '\n') {
+            this->line++;
+            this->column = 1;
+        }
+
+        return c;
+    }
+    return std::nullopt;
 }
