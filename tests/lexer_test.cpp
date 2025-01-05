@@ -266,6 +266,42 @@ TEST(LexerTests, Boolean) {
 
 // <expr> 
 // Relational
+TEST(LexerTests, Relational) {
+    const std::array<std::string, 4> input = {
+        "1 < 2",
+        "1 > 2",
+        "1 <= 2",
+        "1 >= 2"
+    };
+    const std::array<std::vector<Token>, 4> validTokens = {
+        {
+            Token(TokenType::IntegerLiteral, "1"),
+            Token(TokenType::Less, "<"),
+            Token(TokenType::IntegerLiteral, "2")
+        },
+        {
+            Token(TokenType::IntegerLiteral, "1"),
+            Token(TokenType::Greater, ">"),
+            Token(TokenType::IntegerLiteral, "2")
+        },
+        {
+            Token(TokenType::IntegerLiteral, "1"),
+            Token(TokenType::LessEqual, "<="),
+            Token(TokenType::IntegerLiteral, "2")
+        },
+        {
+            Token(TokenType::IntegerLiteral, "1"),
+            Token(TokenType::GreaterEqual, ">="),
+            Token(TokenType::IntegerLiteral, "2")
+        }
+    };
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+        ASSERT_TRUE(validTokens[i] == tokens);
+    }
+}
 
 // <expr> 
 // bitwise
