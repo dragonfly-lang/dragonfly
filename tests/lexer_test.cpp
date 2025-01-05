@@ -113,42 +113,53 @@ TEST(LexerTests, Integer) {
     }
 }
 
-// Test for operators
-TEST(LexerTests, Operators) {
-    const std::array<std::string, 5> input = {
-        "+", "-", "*", "/", "="
+// Test for all symbols
+TEST(LexerTests, Symbols) {
+    const std::array<std::string, 18> input = {
+        "+",
+        "-",
+        "*",
+        "/",
+        "=",
+        "==",
+        "!=",
+        "<",
+        ">",
+        "<=",
+        ">=",
+        "&&",
+        "||",
+        "!",
+        "&",
+        "|",
+        "^",
+        "~"
     };
-    const std::array<Token, 5> validTokens = {
+    const std::array<Token, 18> validTokens = {
         Token(TokenType::Plus, "+"),
         Token(TokenType::Minus, "-"),
-        Token(TokenType::Asterisk, "*"),
+        Token(TokenType::Star, "*"),
         Token(TokenType::Slash, "/"),
-        Token(TokenType::Equal, "=")
+        Token(TokenType::Assign, "="),
+        Token(TokenType::Equals, "=="),
+        Token(TokenType::NotEquals, "!="),
+        Token(TokenType::LessThan, "<"),
+        Token(TokenType::GreaterThan, ">"),
+        Token(TokenType::LessThanOrEqualTo, "<="),
+        Token(TokenType::GreaterThanOrEqualTo, ">="),
+        Token(TokenType::And, "&&"),
+        Token(TokenType::Or, "||"),
+        Token(TokenType::Not, "!"),
+        Token(TokenType::Ampersand, "&"),
+        Token(TokenType::Pipe, "|"),
+        Token(TokenType::Caret, "^"),
+        Token(TokenType::Tilde, "~")
     };
 
     Lexer lexer;
 
     for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_operator(input[i]);
-        ASSERT_TRUE(validTokens[i] == t);
-    }
-}
-
-// Test for punctuation
-TEST(LexerTests, Punctuation) {
-    const std::array<std::string, 3> input = {
-        "{", "}", ";"
-    };
-    const std::array<Token, 3> validTokens = {
-        Token(TokenType::LeftBrace, "{"),
-        Token(TokenType::RightBrace, "}"),
-        Token(TokenType::Semicolon, ";")
-    };
-
-    Lexer lexer;
-
-    for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_punctuation(input[i]);
+        Token t = lexer.lex_symbol(input[i]);
         ASSERT_TRUE(validTokens[i] == t);
     }
 }
