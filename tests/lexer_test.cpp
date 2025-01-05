@@ -529,6 +529,28 @@ TEST(LexerTests, Arguments) {
     ASSERT_TRUE(validTokens == tokens);
 }
 
+// <identifier>(<args>)
+TEST(LexerTests, FunctionCall) {
+    const std::string input = "function(x, y, 1 + 3)";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::Identifier, "function"),
+        Token(TokenType::LeftParen, "("),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::Identifier, "y"),
+        Token(TokenType::Comma, ","),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "3"),
+        Token(TokenType::RightParen, ")")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
+
 // while <expr> { <statement(s)> }
 // for <identifier> in <identifier> { <statement(s)> }
 // for <identifier> in <expr> { <statement(s)> }
