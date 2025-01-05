@@ -343,6 +343,47 @@ TEST(LexerTests, Bitwise) {
 
 // <expr>
 // Mixed
+TEST(LexerTests, Mixed) {
+    const std::string input = "1 + 2 * 3 / 4 - 5 == !true && 7 < 8 || 9 > 10 && 11 <= 12 | 13 & 14 ^ 15";  
+    const std::vector<Token> validTokens = {
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2"),
+        Token(TokenType::Star, "*"),
+        Token(TokenType::IntegerLiteral, "3"),
+        Token(TokenType::Slash, "/"),
+        Token(TokenType::IntegerLiteral, "4"),
+        Token(TokenType::Minus, "-"),
+        Token(TokenType::IntegerLiteral, "5"),
+        Token(TokenType::EqualEqual, "=="),
+        Token(TokenType::Bang, "!"),
+        Token(TokenType::True, "true"),
+        Token(TokenType::And, "&&"),
+        Token(TokenType::IntegerLiteral, "7"),
+        Token(TokenType::Less, "<"),
+        Token(TokenType::IntegerLiteral, "8"),
+        Token(TokenType::Or, "||"),
+        Token(TokenType::IntegerLiteral, "9"),
+        Token(TokenType::Greater, ">"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::And, "&&"),
+        Token(TokenType::IntegerLiteral, "11"),
+        Token(TokenType::LessEqual, "<="),
+        Token(TokenType::IntegerLiteral, "12"),
+        Token(TokenType::Pipe, "|"),
+        Token(TokenType::IntegerLiteral, "13"),
+        Token(TokenType::Ampersand, "&"),
+        Token(TokenType::IntegerLiteral, "14"),
+        Token(TokenType::Caret, "^"),
+        Token(TokenType::IntegerLiteral, "15")
+    };
+
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
 
 // let <identifier> <identifier> 
 TEST(LexerTests, VariableDeclarationWithoutExpr) {
