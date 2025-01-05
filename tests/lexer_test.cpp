@@ -227,6 +227,42 @@ TEST(LexerTests, Arithmetic) {
 
 // <expr> 
 // Boolean
+TEST(LexerTests, Boolean) {
+    const std::array<std::string, 4> input = {
+        "true && false",
+        "true || false",
+        "!true",
+        "true == false"
+        "true != false"
+    };
+    const std::array<std::vector<Token>, 4> validTokens = {
+        {
+            Token(TokenType::True, "true"),
+            Token(TokenType::And, "&&"),
+            Token(TokenType::False, "false")
+        },
+        {
+            Token(TokenType::True, "true"),
+            Token(TokenType::Or, "||"),
+            Token(TokenType::False, "false")
+        },
+        {
+            Token(TokenType::Bang, "!"),
+            Token(TokenType::True, "true")
+        },
+        {
+            Token(TokenType::True, "true"),
+            Token(TokenType::EqualEqual, "=="),
+            Token(TokenType::False, "false")
+        }
+    };
+    Lexer lexer;
+
+    for (size_t i = 0; i < input.size(); i++) {
+        std::vector<Token> tokens = lexer.lex(input[i]);
+        ASSERT_TRUE(validTokens[i] == tokens);
+    }
+}
 
 // <expr> 
 // Relational
