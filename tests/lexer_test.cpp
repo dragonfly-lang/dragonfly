@@ -394,7 +394,13 @@ TEST(LexerTests, Mixed) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // let <identifier> <identifier>
@@ -409,7 +415,13 @@ TEST(LexerTests, VariableDeclarationWithoutExpr) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // let <identifier> <identifier> = <expr>
@@ -428,7 +440,13 @@ TEST (LexerTests, VariableDeclarationWithExpr) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // let <identifier> = <expr>
@@ -446,7 +464,13 @@ TEST(LexerTests, VariableDeclarationWithoutType) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // let mut <identifier> <identifier> = <expr>
@@ -466,7 +490,13 @@ TEST(LexerTests, MutableVariableDeclarationWithExpr) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // let mut <identifier> <identifier> 
@@ -482,7 +512,13 @@ TEST(LexerTests, MutableVariableDeclarationWithoutExpr) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // let mut <identifier> = <expr>
@@ -501,7 +537,13 @@ TEST(LexerTests, MutableVariableDeclarationWithoutType) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // <identifier> = <expr>
@@ -518,7 +560,13 @@ TEST(LexerTests, Assignment) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // <args>
@@ -538,7 +586,13 @@ TEST(LexerTests, Arguments) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // <identifier>(<args>)
@@ -560,7 +614,13 @@ TEST(LexerTests, FunctionCall) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // while <expr> { <statement(s)> }
@@ -583,7 +643,13 @@ TEST(LexerTests, WhileLoop) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // for <identifier> in <identifier> { <statement(s)> }
@@ -608,7 +674,13 @@ TEST(LexerTests, ForLoop) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // for <identifier> in <expr> { <statement(s)> }
@@ -637,7 +709,13 @@ TEST(LexerTests, ForLoopWithExpr) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // if <expr> { <statement(s)> }
@@ -660,7 +738,13 @@ TEST(LexerTests, IfStatement) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // else if <expr> { <statement(s)> }
@@ -695,7 +779,13 @@ TEST(LexerTests, ElseIfStatement) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
 
 // else { <statement(s)> }
@@ -726,5 +816,11 @@ TEST(LexerTests, ElseStatement) {
 
     std::vector<Token> tokens = lexer.lex(input);
 
-    ASSERT_TRUE(validTokens == tokens);
+    ASSERT_EQ(validTokens.size(), tokens.size())
+        << "Failed on input: " << input
+        << " ( recieved a size of " << tokens.size() << ", expected a size of " << validTokens.size() << ")";
+
+    ASSERT_EQ(validTokens, tokens)
+        << "Failed on input: " << input
+        << " ( recieved: " << token_vector_to_string(tokens) << ", expected: " << token_vector_to_string(validTokens) << ")";
 }
