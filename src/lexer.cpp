@@ -104,20 +104,40 @@ Token Lexer::lex_number() {
     return Token(TokenType::IntegerLiteral, value, line, column);
 }
 
-Token lex_identifier(Lexer* lexer) {
-    size_t start = lexer->position;
-    while (isalnum(lexer->source[lexer->position])) {
-        lexer->position++;
+Token Lexer::lex_string() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    this->advance(); // Skip the opening quote
+
+    while (true) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value() || opt_c.value() == '"') {
+            break;
+        }
+
+        if (opt_c.value() == '\\') {
+            this->advance(); // Skip the backslash
+            auto escaped_char = this->advance();
+            if (escaped_char.has_value()) {
+                switch (escaped_char.value()) {
+                    case 'n': value += '\n'; break;
+                    case 't': value += '\t'; break;
+                    case 'r': value += '\r'; break;
+                    case '\\': value += '\\'; break;
+                    case '"': value += '"'; break;
+                    default: value += '\\'; value += escaped_char.value(); break;
+                }
+            }
+        } else {
+            value += this->advance().value();
+        }
     }
 
-    size_t length = lexer->position - start;
-    char* value = strndup(lexer->source + start, length);
+    this->advance(); // Skip the closing quote
 
-    Token token = {TOKEN_IDENTIFIER, value};
-
-    token = is_keyword(token);
-
-    return token;
+    return Token(TokenType::StringLiteral, value, line, column);
 }
 
 Token lex_symbol(Lexer* lexer) {
