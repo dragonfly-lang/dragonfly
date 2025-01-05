@@ -12,9 +12,9 @@ set(SOURCES
     src/lexer.cpp
     src/token.cpp
     src/parser.cpp
-    src/vm.cpp
     src/codegen.cpp
     src/semantics.cpp
+    src/main.cpp
 )
 
 add_executable(dragon src/main.cpp ${SOURCES})
