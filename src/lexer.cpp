@@ -11,13 +11,13 @@ std::vector<Token> Lexer::lex(std::string input) {
     this->input = input;
     return this->lex();
 }
-}
 
-TokenList* tokenise(const char* source) {
-    TokenList* tokens = create_token_list();
-
-    if (source == NULL || strlen(source) == 0) {
-        return tokens;
+void Lexer::reset() {
+    this->tokens.clear();
+    this->input = "";
+    this->index = 0;
+    this->line = 1;
+    this->column = 1;
     }
 
     Lexer* lexer = create_lexer(source);
