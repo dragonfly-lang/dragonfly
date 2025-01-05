@@ -64,10 +64,24 @@ std::vector<Token> Lexer::lex() {
     return this->tokens;
 }
 
-Token lex_number(Lexer* lexer) {
-    size_t start = lexer->position;
-    while (isdigit(lexer->source[lexer->position])) {
-        lexer->position++;
+Token Lexer::lex_identifier() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
+
+    while (true) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value() || !(std::isalnum(opt_c.value()) || opt_c.value() == '_')) {
+            break;
+        }
+        value += this->advance().value();
+        std::cout << "building value: " << value << std::endl;
+    }
+
+    TokenType type = this->get_keyword(value);
+    std::cout << "type: " << token_type_to_string(type) << std::endl;
+    std::cout << "value: " << "\"" << value << "\"" << std::endl;
+    return Token(type, value, line, column);
     }
 
     size_t length = lexer->position - start;
