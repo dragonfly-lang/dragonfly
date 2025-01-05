@@ -401,6 +401,23 @@ TEST(LexerTests, VariableDeclarationWithoutExpr) {
 }
 
 // let <identifier> <identifier> = <expr>
+TEST (LexerTests, VariableDeclarationWithExpr) {
+    const std::string input = "let variable int = 1 + 2";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::LetKeyword, "let"),
+        Token(TokenType::Identifier, "variable"),
+        Token(TokenType::Identifier, "int"),
+        Token(TokenType::Equal, "="),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "2")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
 // let <identifier> = <expr>
 // const <identifier> <identifier> = <expr>
 // const <identifier> <identifier> 
