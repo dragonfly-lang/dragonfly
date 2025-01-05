@@ -76,7 +76,7 @@ TEST(LexerTests, StringLiterals) {
         "\"Abcdefghijklmnopqrstuvwxyz @#][{};;@'><,.//?)(*&^%$£1234567890+_-=`¬\\|\""
 
     };
-    const std::array<Token, 1> validTokens = {
+    const std::array<Token, 3> validTokens = {
         Token(TokenType::StringLiteral, "Enter username: "),
         Token(TokenType::StringLiteral, "This is a string with a escape characters \" \n \t "),
         Token(TokenType::StringLiteral, "Abcdefghijklmnopqrstuvwxyz @#][{};;@'><,.//?)(*&^%$£1234567890+_-=`¬\\|")
@@ -85,7 +85,7 @@ TEST(LexerTests, StringLiterals) {
     Lexer lexer;
 
     for (size_t i = 0; i < input.size(); i++) {
-        Token t = lexer.lex_string_literal(input[i]);
+        Token t = lexer.lex_string(input[i]);
         ASSERT_TRUE(validTokens[i] == t);
     }
 }
