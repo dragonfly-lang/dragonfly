@@ -84,11 +84,24 @@ Token Lexer::lex_identifier() {
     return Token(type, value, line, column);
     }
 
-    size_t length = lexer->position - start;
-    char* value = strndup(lexer->source + start, length);
+Token Lexer::lex_number() {
+    std::string value = "";
+    size_t line = this->line;
+    size_t column = this->column;
 
-    Token token = {TOKEN_INTEGER, value};
-    return token;
+    while (true) {
+        auto opt_c = this->peek();
+        if (opt_c.has_value() && opt_c.value() == '_') {
+            this->advance();
+            continue;
+        }
+        if (!opt_c.has_value() || !std::isdigit(opt_c.value())) {
+            break;
+        }
+        value += this->advance().value();
+    }
+
+    return Token(TokenType::IntegerLiteral, value, line, column);
 }
 
 Token lex_identifier(Lexer* lexer) {
