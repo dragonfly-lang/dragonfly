@@ -20,33 +20,48 @@ void Lexer::reset() {
     this->column = 1;
     }
 
-    Lexer* lexer = create_lexer(source);
+std::vector<Token> Lexer::lex() {
+    while (this->index < this->input.size()) {
+        auto opt_c = this->peek();
+        if (!opt_c.has_value()) break;
+        char c = opt_c.value();
+        std::cout << "lexing starting with: " << c << std::endl;
 
-    while (lexer->position < strlen(lexer->source)) {
-        char c = lexer->source[lexer->position];
-
-        while (c == ' ' || c == '\n' || c == '\t') {
-            lexer->position++;
-            c = lexer->source[lexer->position];
+        if (std::isspace(c)) {
+            this->advance();
+            continue;
         }
 
-        Token token = {TOKEN_INVALID, NULL};
-        if (isdigit(c)) {
-            token = lex_number(lexer);
-        } else if (isalpha(c)) {
-            token = lex_identifier(lexer);
-        } else if (c == '"' || c == '\'') {
-            token = lex_string(lexer);
-        } else {
-            token = lex_symbol(lexer);
+        if (std::isalpha(c) || c == '_') {
+            this->tokens.push_back(this->lex_identifier());
+            continue;
         }
 
-        append_token(tokens, token);
+        if (std::isdigit(c)) {
+            this->tokens.push_back(this->lex_number());
+            continue;
+        }
+
+        if (c == '"') {
+            std::cout << "lexing string" << std::endl;
+            this->tokens.push_back(this->lex_string());
+            continue;
+        }
+
+        if (c == '/' && this->peek_next() == '/') {
+            this->tokens.push_back(this->lex_single_line_comment());
+            continue;
+        }
+
+        if (c == '/' && this->peek_next() == '*') {
+            this->tokens.push_back(this->lex_multi_line_comment());
+            continue;
     }
 
-    free_lexer(lexer);
+        this->tokens.push_back(this->lex_symbol());
+    }
 
-    return tokens;
+    return this->tokens;
 }
 
 Token lex_number(Lexer* lexer) {
