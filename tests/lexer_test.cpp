@@ -652,4 +652,38 @@ TEST(LexerTests, IfStatement) {
 }
 
 // else if <expr> { <statement(s)> }
+TEST(LexerTests, ElseIfStatement) {
+    const std::string input = "if x < 10 { x = x + 1 } else if x > 10 { x = x - 1 }";
+    const std::vector<Token> validTokens = {
+        Token(TokenType::If, "if"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Less, "<"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Equal, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Plus, "+"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}"),
+        Token(TokenType::Else, "else"),
+        Token(TokenType::If, "if"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Greater, ">"),
+        Token(TokenType::IntegerLiteral, "10"),
+        Token(TokenType::LeftBrace, "{"),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Equal, "="),
+        Token(TokenType::Identifier, "x"),
+        Token(TokenType::Minus, "-"),
+        Token(TokenType::IntegerLiteral, "1"),
+        Token(TokenType::RightBrace, "}")
+    };
+    Lexer lexer;
+
+    std::vector<Token> tokens = lexer.lex(input);
+
+    ASSERT_TRUE(validTokens == tokens);
+}
+
 // else { <statement(s)> }
