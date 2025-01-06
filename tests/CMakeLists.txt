@@ -1,4 +1,6 @@
-add_executable(run_tests lexer_test.cpp parser_test.cpp semantics_test.cpp)
+file(GLOB_RECURSE PARSER_TESTS "parser/*.cpp")
+
+add_executable(run_tests lexer_test.cpp ${PARSER_TESTS} semantics_test.cpp)
 
 target_link_libraries(run_tests gtest gtest_main pthread)
 target_include_directories(run_tests PRIVATE ../include)
