@@ -1,0 +1,7 @@
+let message = "Hello, world!"
+
+println("Let's spell \"Hello, world!\"")
+for i in message {
+    println(i)
+}
+println(message)

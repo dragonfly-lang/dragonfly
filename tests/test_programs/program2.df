@@ -1,0 +1,33 @@
+// This is a login system
+
+while true {
+    println("Username: ")
+    let mut username = input()
+    println("Password: ")
+    let mut password = input()
+
+    if username == "admin" && password = "admin" {
+        println("Nice try HACKERMAN!")
+    } else if (username == "Will" || username == "Joe") {
+        println("Nuh uh... You're not allow!)
+    } else if username == "Remy" && password == "***" {
+        println("Welcome boss man!")
+        println(">> Try \"help\" for a list of commands!)
+        while true {
+            println(">> ")
+            let user_input = input()
+            if user_input == "help" {
+                println("Commands:")
+                println("help - shows this message")
+                println("logout - logs out of the system")
+            } else if user_input == "logout" {
+                println("Logging out! See ya next time...)
+                break
+            }
+        }
+    } else {
+        println("Nice try! Have another go...")
+    }
+}
+
+println("System shutting down")
