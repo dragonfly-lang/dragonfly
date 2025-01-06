@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(Dragon C CXX)
+project(Dragonfly C CXX)
 
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD 23)
@@ -16,7 +16,7 @@ set(SOURCES
     src/main.cpp
 )
 
-add_executable(dragon src/main.cpp ${SOURCES})
+add_executable(dfc src/main.cpp ${SOURCES})
 
 include(FetchContent)
 FetchContent_Declare(
