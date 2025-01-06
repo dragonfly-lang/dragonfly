@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <sstream>
+#include <vector>
 
 enum class TokenType {
     // Keywords
@@ -136,7 +138,7 @@ public:
         return this->type != other.type || this->value != other.value;
     }
 
-    inline std::string to_string() {
+    inline std::string to_string() const {
                 std::stringstream ss;
         ss << "Token(" << token_type_to_string(this->type);
         if (!this->value.empty()) {
